@@ -459,8 +459,15 @@
       max-width: 100%;
       overflow: hidden;
     }
-    .act-pill.is-mine { cursor: pointer; padding-right: 5px; }
+    .act-pill.is-mine { cursor: grab; padding-right: 5px; }
+    .act-pill.is-mine:active { cursor: grabbing; }
     .act-pill.is-mine:hover { filter: brightness(1.15); }
+    .act-pill.dragging { opacity: 0.35; }
+    .act-cell.drop-target {
+      background: rgba(139, 92, 246, .15) !important;
+      outline: 2px dashed var(--accent);
+      outline-offset: -2px;
+    }
     .pill-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .pill-del {
       flex-shrink: 0;
@@ -1350,7 +1357,8 @@
     });
 
     // ── Gipfel popover ───────────────────────────────────────────────
-    let gipfelCtx = null; // { dayIdx, count }
+    let gipfelCtx = null;
+    let dragPayload = null; // { activity, activityLabel } for same-page DnD
     function closeGipfelPop() {
       $('gipfel-pop').classList.remove('open');
       gipfelCtx = null;
@@ -1627,6 +1635,17 @@
                 (isMe ? `<button class="pill-del" title="Remove">×</button>` : '');
 
               if (isMe) {
+                // Drag source
+                pill.draggable = true;
+                pill.addEventListener('dragstart', e => {
+                  dragPayload = { activity: entry.activity, activityLabel: actLabel };
+                  e.dataTransfer.effectAllowed = 'copy';
+                  setTimeout(() => pill.classList.add('dragging'), 0);
+                });
+                pill.addEventListener('dragend', () => {
+                  pill.classList.remove('dragging');
+                  document.querySelectorAll('.drop-target').forEach(el => el.classList.remove('drop-target'));
+                });
                 pill.querySelector('.pill-del').addEventListener('click', e => {
                   e.stopPropagation();
                   removeEntry(dayIdx, slot.key, person);
@@ -1636,6 +1655,17 @@
                     e.stopPropagation();
                     showCommentModal(dayIdx, slot.key);
                   }
+                });
+                // Drop target (replacing existing)
+                cell.addEventListener('dragover', e => { e.preventDefault(); cell.classList.add('drop-target'); });
+                cell.addEventListener('dragleave', () => cell.classList.remove('drop-target'));
+                cell.addEventListener('drop', async e => {
+                  e.preventDefault();
+                  cell.classList.remove('drop-target');
+                  if (!dragPayload) return;
+                  const { activity, activityLabel } = dragPayload;
+                  if (activity === entry.activity) return; // same — no-op
+                  await addEntry(dayIdx, slot.key, { id: activity, label: activityLabel });
                 });
               }
 
@@ -1663,6 +1693,16 @@
                   showActivityPicker(addBtn, dayIdx, slot.key);
                 });
                 cell.appendChild(addBtn);
+                // Drop target (empty cell)
+                cell.addEventListener('dragover', e => { e.preventDefault(); cell.classList.add('drop-target'); });
+                cell.addEventListener('dragleave', () => cell.classList.remove('drop-target'));
+                cell.addEventListener('drop', async e => {
+                  e.preventDefault();
+                  cell.classList.remove('drop-target');
+                  if (!dragPayload) return;
+                  const { activity, activityLabel } = dragPayload;
+                  await addEntry(dayIdx, slot.key, { id: activity, label: activityLabel });
+                });
               }
             }
             grid.appendChild(cell);
