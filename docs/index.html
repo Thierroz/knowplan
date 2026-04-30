@@ -334,9 +334,8 @@
     /* ── Calendar grid: name column + 5 day columns ── */
     .cal-grid {
       display: grid;
-      grid-template-columns: max-content repeat(5, max-content);
-      width: max-content;
-      min-width: 100%;
+      grid-template-columns: max-content repeat(5, minmax(max-content, 1fr));
+      width: 100%;
       border: 1px solid var(--border);
       border-radius: var(--radius);
     }
