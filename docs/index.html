@@ -151,6 +151,75 @@
       font-weight: 500;
     }
 
+    /* Today + jump buttons */
+    .nav-pill {
+      padding: 5px 10px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--muted);
+      font-size: .7rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      white-space: nowrap;
+      transition: background .15s, border-color .15s, color .15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .nav-pill:hover {
+      background: rgba(139,92,246,.2);
+      border-color: var(--accent);
+      color: var(--text);
+    }
+    .nav-pill.is-current {
+      opacity: .35;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    /* Week-jump popover */
+    #week-jump-pop {
+      display: none;
+      position: fixed;
+      z-index: 300;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 14px;
+      box-shadow: 0 12px 40px rgba(0,0,0,.5);
+      gap: 8px;
+      align-items: center;
+    }
+    #week-jump-pop.open {
+      display: flex;
+    }
+    #week-jump-input {
+      padding: 7px 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      color: var(--text);
+      font-size: .82rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color .2s;
+    }
+    #week-jump-input::-webkit-calendar-picker-indicator {
+      filter: invert(.7);
+    }
+    #week-jump-input:focus { border-color: var(--accent); }
+    #week-jump-go {
+      padding: 7px 13px;
+      border-radius: 9px;
+      border: none;
+      background: linear-gradient(135deg,#8b5cf6,#6d28d9);
+      color: #fff;
+      font-size: .82rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
     /* ── Name bar ── */
     #name-bar {
       display: flex;
@@ -496,6 +565,42 @@
       color: var(--accent);
     }
 
+    /* Free-text custom row inside picker */
+    .picker-custom-row {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 4px 2px;
+    }
+    .picker-custom-row.visible { display: flex; }
+    .picker-custom-inp {
+      flex: 1;
+      padding: 7px 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      color: var(--text);
+      font-size: .82rem;
+      font-family: inherit;
+      outline: none;
+      min-width: 0;
+      transition: border-color .2s;
+    }
+    .picker-custom-inp:focus { border-color: var(--accent); }
+    .picker-custom-go {
+      flex-shrink: 0;
+      padding: 7px 11px;
+      border-radius: 9px;
+      border: none;
+      background: linear-gradient(135deg,#8b5cf6,#6d28d9);
+      color: #fff;
+      font-size: .9rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      line-height: 1;
+    }
+
     /* Activities settings modal */
     .act-list {
       display: flex;
@@ -819,6 +924,14 @@
       <button class="week-btn" id="prev-week">‹</button>
       <div id="week-label">Loading…<span id="week-tag"></span></div>
       <button class="week-btn" id="next-week">›</button>
+      <button class="nav-pill" id="today-btn">Today</button>
+      <button class="nav-pill" id="jump-btn">↗ Wk</button>
+    </div>
+
+    <!-- Week-jump popover (appended to body, positioned by JS) -->
+    <div id="week-jump-pop">
+      <input type="week" id="week-jump-input" />
+      <button id="week-jump-go">Go</button>
     </div>
   </div>
 
@@ -869,6 +982,10 @@
   <!-- Activity picker -->
   <div id="activity-picker" class="picker-popup">
     <div class="picker-title">Your activity</div>
+    <div class="picker-custom-row" id="picker-custom-row">
+      <input class="picker-custom-inp" id="picker-custom-inp" placeholder="Type activity…" maxlength="30" />
+      <button class="picker-custom-go" id="picker-custom-go">✓</button>
+    </div>
     <div class="picker-footer">
       <button class="picker-configure" id="picker-configure">+ Configure my activities</button>
     </div>
@@ -1112,6 +1229,8 @@
       $('week-label').childNodes[0].textContent = `${fmtDate(mon)} – ${fmtDate(fri)} ${fri.getUTCFullYear()}`;
       const thisWeek = getWeekKey();
       $('week-tag').textContent = currentWeekKey === thisWeek ? 'This week' : currentWeekKey;
+      // Dim Today button when already on current week
+      $('today-btn').classList.toggle('is-current', currentWeekKey === thisWeek);
     }
 
     $('prev-week').addEventListener('click', () => {
@@ -1121,6 +1240,46 @@
     $('next-week').addEventListener('click', () => {
       currentWeekKey = offsetWeek(currentWeekKey, +1);
       subscribeWeek();
+    });
+
+    // ── Today button ─────────────────────────────────────────────────
+    $('today-btn').addEventListener('click', () => {
+      currentWeekKey = getWeekKey();
+      subscribeWeek();
+    });
+
+    // ── Week-jump popover ─────────────────────────────────────────────
+    function closeJumpPop() {
+      $('week-jump-pop').classList.remove('open');
+    }
+    $('jump-btn').addEventListener('click', e => {
+      e.stopPropagation();
+      const pop = $('week-jump-pop');
+      const r = e.currentTarget.getBoundingClientRect();
+      pop.style.top  = (r.bottom + 8) + 'px';
+      pop.style.right = (document.documentElement.clientWidth - r.right) + 'px';
+      pop.style.left = 'auto';
+      // Pre-fill with current week in YYYY-WXX format
+      $('week-jump-input').value = currentWeekKey;
+      pop.classList.toggle('open');
+      setTimeout(() => $('week-jump-input').focus(), 50);
+    });
+    $('week-jump-go').addEventListener('click', () => {
+      const val = $('week-jump-input').value; // "YYYY-WXX"
+      if (!val) return;
+      currentWeekKey = val;
+      subscribeWeek();
+      closeJumpPop();
+    });
+    $('week-jump-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') $('week-jump-go').click();
+      if (e.key === 'Escape') closeJumpPop();
+    });
+    document.addEventListener('click', e => {
+      const pop = $('week-jump-pop');
+      if (pop.classList.contains('open') && !pop.contains(e.target) && e.target !== $('jump-btn')) {
+        closeJumpPop();
+      }
     });
 
     // ── Firestore ────────────────────────────────────────────────────
@@ -1140,14 +1299,16 @@
       });
     }
 
-    // ── Activity Picker ─────────────────────────────────────────────
+    // ── Activity Picker ─────────────────────────────────────────────────
     let pickerCleanup = null;
     function showActivityPicker(anchorEl, dayIdx, slotKey) {
       const picker = $('activity-picker');
-      // Remove old option buttons
+      // Remove old option buttons & reset custom row
       picker.querySelectorAll('.picker-opt').forEach(el => el.remove());
-      // Re-insert options before the footer
-      const footer = picker.querySelector('.picker-footer');
+      $('picker-custom-row').classList.remove('visible');
+      $('picker-custom-inp').value = '';
+      // Re-insert options before the custom row
+      const customRow = $('picker-custom-row');
       userActivities.forEach(act => {
         const btn = document.createElement('button');
         btn.className = 'picker-opt';
@@ -1156,8 +1317,30 @@
           closePicker();
           await addEntry(dayIdx, slotKey, act);
         });
-        picker.insertBefore(btn, footer);
+        picker.insertBefore(btn, customRow);
       });
+      // Always-present "Other…" option — not in userActivities so it can't be deleted
+      const otherBtn = document.createElement('button');
+      otherBtn.className = 'picker-opt';
+      otherBtn.textContent = '✏️ Other…';
+      otherBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        picker.querySelectorAll('.picker-opt').forEach(el => el.style.display = 'none');
+        $('picker-custom-row').classList.add('visible');
+        setTimeout(() => $('picker-custom-inp').focus(), 30);
+      });
+      picker.insertBefore(otherBtn, customRow);
+      // Wire confirm — re-assigned each call to capture current dayIdx/slotKey
+      $('picker-custom-go').onclick = async () => {
+        const label = $('picker-custom-inp').value.trim();
+        if (!label) return;
+        closePicker();
+        await addEntry(dayIdx, slotKey, { id: label.toLowerCase().replace(/\s+/g, '_'), label });
+      };
+      $('picker-custom-inp').onkeydown = e => {
+        if (e.key === 'Enter') $('picker-custom-go').click();
+        if (e.key === 'Escape') closePicker();
+      };
       // Position near anchor
       const r = anchorEl.getBoundingClientRect();
       picker.style.top = (r.bottom + 6) + 'px';
