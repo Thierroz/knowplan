@@ -1429,11 +1429,18 @@
         if (e.key === 'Enter') $('picker-custom-go').click();
         if (e.key === 'Escape') closePicker();
       };
-      // Position near anchor
-      const r = anchorEl.getBoundingClientRect();
-      picker.style.top = (r.bottom + 6) + 'px';
-      picker.style.left = Math.max(8, r.left) + 'px';
+      // Position near anchor — flip above if not enough room below
       picker.classList.add('open');
+      const r = anchorEl.getBoundingClientRect();
+      const ph = picker.offsetHeight;
+      const vh = window.innerHeight;
+      const vw = window.innerWidth;
+      const fitsBelow = r.bottom + 6 + ph <= vh - 8;
+      picker.style.top = fitsBelow
+        ? (r.bottom + 6) + 'px'
+        : Math.max(8, r.top - ph - 6) + 'px';
+      const pw = picker.offsetWidth;
+      picker.style.left = Math.min(Math.max(8, r.left), vw - pw - 8) + 'px';
       if (pickerCleanup) pickerCleanup();
       const close = e => { if (!picker.contains(e.target) && e.target !== anchorEl) closePicker(); };
       document.addEventListener('click', close, { capture: true, once: true });
