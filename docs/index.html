@@ -512,6 +512,8 @@
       flex-direction: column;
       gap: 4px;
       min-width: 160px;
+      max-height: calc(100dvh - 24px);
+      overflow-y: auto;
     }
 
     .picker-popup.open {
@@ -1422,7 +1424,11 @@
         e.stopPropagation();
         picker.querySelectorAll('.picker-opt').forEach(el => el.style.display = 'none');
         $('picker-custom-row').classList.add('visible');
-        setTimeout(() => $('picker-custom-inp').focus(), 30);
+        // Re-position now that the picker height has changed
+        requestAnimationFrame(() => {
+          if (picker._reposition) picker._reposition();
+          $('picker-custom-inp').focus();
+        });
       });
       picker.insertBefore(otherBtn, customRow);
       // Wire confirm — re-assigned each call to capture current dayIdx/slotKey
@@ -1438,16 +1444,21 @@
       };
       // Position near anchor — flip above if not enough room below
       picker.classList.add('open');
-      const r = anchorEl.getBoundingClientRect();
-      const ph = picker.offsetHeight;
-      const vh = window.innerHeight;
-      const vw = window.innerWidth;
-      const fitsBelow = r.bottom + 6 + ph <= vh - 8;
-      picker.style.top = fitsBelow
-        ? (r.bottom + 6) + 'px'
-        : Math.max(8, r.top - ph - 6) + 'px';
-      const pw = picker.offsetWidth;
-      picker.style.left = Math.min(Math.max(8, r.left), vw - pw - 8) + 'px';
+      const repositionPicker = () => {
+        const r = anchorEl.getBoundingClientRect();
+        const ph = picker.offsetHeight;
+        const vh = window.innerHeight;
+        const vw = window.innerWidth;
+        const fitsBelow = r.bottom + 6 + ph <= vh - 8;
+        picker.style.top = fitsBelow
+          ? (r.bottom + 6) + 'px'
+          : Math.max(8, r.top - ph - 6) + 'px';
+        const pw = picker.offsetWidth;
+        picker.style.left = Math.min(Math.max(8, r.left), vw - pw - 8) + 'px';
+      };
+      repositionPicker();
+      // Re-expose so the Other… handler can call it after expanding
+      picker._reposition = repositionPicker;
       if (pickerCleanup) pickerCleanup();
       const close = e => { if (!picker.contains(e.target) && e.target !== anchorEl) closePicker(); };
       document.addEventListener('click', close, { capture: true, once: true });
