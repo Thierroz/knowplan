@@ -105,6 +105,24 @@
     #my-name option { background: var(--surface2); color: var(--text); }
     .name-hint { font-size: .7rem; color: var(--muted); }
 
+    /* Copy-last-week button */
+    #copy-last-week {
+      margin-left: auto;
+      display: flex; align-items: center; gap: 6px;
+      padding: 7px 13px;
+      background: rgba(139,92,246,.1);
+      border: 1px solid rgba(139,92,246,.35);
+      border-radius: 20px;
+      color: var(--accent);
+      font-size: .75rem; font-weight: 600;
+      cursor: pointer; font-family: inherit; white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+      transition: background .15s, border-color .15s, opacity .15s;
+    }
+    #copy-last-week:hover { background: rgba(139,92,246,.2); border-color: var(--accent); }
+    #copy-last-week:disabled { opacity: .35; cursor: not-allowed; }
+    #copy-last-week .btn-icon { font-size: .9rem; }
+
     /* ── Main ── */
     main { padding: 16px 16px calc(var(--safe-bot) + 24px); }
 
@@ -297,7 +315,9 @@
       <option value="Rolf">Rolf</option>
       <option value="KnowJunior">KnowJunior</option>
     </select>
-    <span class="name-hint">Tap any slot to add yourself</span>
+    <button id="copy-last-week" title="Copy your slots from last week into this week">
+      <span class="btn-icon">📋</span> Copy last week
+    </button>
   </div>
 
   <!-- Calendar -->
@@ -480,6 +500,53 @@ async function removeName(dayIdx, slotKey, name) {
     await updateDoc(weekRef(), { [field]: arrayRemove(name) });
   } catch (e) { console.error(e); showToast('⚠️ Remove failed'); }
 }
+
+// ── Copy last week ────────────────────────────────────────────────
+async function copyLastWeek() {
+  if (!myName) { showPrompt(); return; }
+  const btn = $('copy-last-week');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="btn-icon">⏳</span> Copying…';
+  try {
+    const lastWeekKey = offsetWeek(currentWeekKey, -1);
+    const lastRef     = doc(db, 'weeks', lastWeekKey);
+    const lastSnap    = await getDoc(lastRef);
+    if (!lastSnap.exists()) {
+      showToast('📭 No data found for last week');
+      return;
+    }
+    const lastData = lastSnap.data();
+    // Collect all fields where I was present last week
+    const slots = ['morning', 'afternoon'];
+    const updates = {};
+    for (let di = 1; di <= 5; di++) {
+      for (const slot of slots) {
+        const field = `d${di}_${slot}`;
+        const lastNames = lastData[field] || [];
+        if (lastNames.includes(myName)) {
+          const thisNames = weekData[field] || [];
+          if (!thisNames.includes(myName)) {
+            updates[field] = arrayUnion(myName);
+          }
+        }
+      }
+    }
+    if (Object.keys(updates).length === 0) {
+      showToast('✅ Already up-to-date (or you had no slots last week)');
+      return;
+    }
+    await setDoc(weekRef(), updates, { merge: true });
+    showToast(`✅ Copied ${Object.keys(updates).length} slot(s) from last week!`);
+  } catch (e) {
+    console.error(e);
+    showToast('⚠️ Copy failed');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<span class="btn-icon">📋</span> Copy last week';
+  }
+}
+
+$('copy-last-week').addEventListener('click', copyLastWeek);
 
 // ── Render ────────────────────────────────────────────────────────
 function renderGrid() {
