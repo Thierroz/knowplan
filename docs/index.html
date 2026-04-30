@@ -1227,7 +1227,12 @@
             const fld = `d${di}_${slot}`;
             const lastSlot = lastData[fld] || {};
             if (lastSlot[myName] && !((weekData[fld] || {})[myName])) {
-              updates[`${fld}.${myName}`] = { activity: lastSlot[myName].activity || 'office', comment: '' };
+              const lastEntry = lastSlot[myName];
+              updates[`${fld}.${myName}`] = {
+                activity: lastEntry.activity || 'office',
+                activityLabel: lastEntry.activityLabel || lastEntry.activity || 'Office',
+                comment: ''
+              };
             }
           }
         }
@@ -1277,7 +1282,9 @@
           Object.entries(slotMap).forEach(([name, entry]) => {
             const c = nameColor(name);
             // Use the label stored in the entry itself — viewer-independent
-            const actLabel = entry.activityLabel || entry.activity || '?';
+            // Fall back to DEFAULT_ACTIVITIES lookup so raw IDs are never shown
+            const defaultAct = DEFAULT_ACTIVITIES.find(a => a.id === entry.activity);
+            const actLabel = entry.activityLabel || (defaultAct ? defaultAct.label : entry.activity) || '?';
             const isMe = name === myName;
             const chip = document.createElement('div');
             chip.className = 'chip' + (isMe ? ' is-mine' : '');
