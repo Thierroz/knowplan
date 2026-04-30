@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -11,26 +12,34 @@
   <title>KnowPlan</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icon-512.png" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     :root {
-      --bg:       #0c0a1e;
-      --surface:  #161232;
+      --bg: #0c0a1e;
+      --surface: #161232;
       --surface2: #201a44;
-      --border:   rgba(139,92,246,.2);
-      --accent:   #8b5cf6;
-      --accent2:  #6d28d9;
-      --glow:     rgba(139,92,246,.3);
-      --text:     #ede9fe;
-      --muted:    #7c6fa8;
-      --radius:   14px;
+      --border: rgba(139, 92, 246, .2);
+      --accent: #8b5cf6;
+      --accent2: #6d28d9;
+      --glow: rgba(139, 92, 246, .3);
+      --text: #ede9fe;
+      --muted: #7c6fa8;
+      --radius: 14px;
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bot: env(safe-area-inset-bottom, 0px);
     }
 
-    html, body {
+    html,
+    body {
       min-height: 100dvh;
       font-family: 'Inter', system-ui, sans-serif;
       background: var(--bg);
@@ -39,101 +48,216 @@
 
     body::before {
       content: '';
-      position: fixed; inset: 0; z-index: -1;
+      position: fixed;
+      inset: 0;
+      z-index: -1;
       background:
-        radial-gradient(ellipse 70% 50% at 15% -5%, rgba(139,92,246,.18) 0%, transparent 60%),
-        radial-gradient(ellipse 50% 40% at 85% 110%, rgba(109,40,217,.2) 0%, transparent 60%),
+        radial-gradient(ellipse 70% 50% at 15% -5%, rgba(139, 92, 246, .18) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 85% 110%, rgba(109, 40, 217, .2) 0%, transparent 60%),
         var(--bg);
     }
 
     /* ── Header ── */
     #header {
-      position: sticky; top: 0; z-index: 100;
+      position: sticky;
+      top: 0;
+      z-index: 100;
       padding: calc(var(--safe-top) + 14px) 20px 14px;
-      background: rgba(12,10,30,.92);
+      background: rgba(12, 10, 30, .92);
       backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; gap: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
-    .logo-wrap { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-    .logo-img { width: 30px; height: 30px; filter: drop-shadow(0 0 8px var(--glow)); animation: float 3.5s ease-in-out infinite; }
-    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+
+    .logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .logo-img {
+      width: 30px;
+      height: 30px;
+      filter: drop-shadow(0 0 8px var(--glow));
+      animation: float 3.5s ease-in-out infinite;
+    }
+
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(0)
+      }
+
+      50% {
+        transform: translateY(-4px)
+      }
+    }
+
     #app-title {
-      font-size: 1.25rem; font-weight: 800;
+      font-size: 1.25rem;
+      font-weight: 800;
       background: linear-gradient(135deg, #a78bfa, #7c3aed);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
     /* Week nav */
-    #week-nav { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+    #week-nav {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: auto;
+    }
+
     .week-btn {
-      width: 32px; height: 32px; border-radius: 50%;
-      background: var(--surface2); border: 1px solid var(--border);
-      color: var(--text); font-size: 1rem; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       transition: background .15s, border-color .15s;
       -webkit-tap-highlight-color: transparent;
     }
-    .week-btn:active { background: var(--accent); border-color: var(--accent); }
-    #week-label {
-      font-size: .78rem; font-weight: 600; color: var(--muted);
-      text-align: center; min-width: 130px; line-height: 1.3;
+
+    .week-btn:active {
+      background: var(--accent);
+      border-color: var(--accent);
     }
-    #week-label span { display: block; font-size: .65rem; color: var(--accent); font-weight: 500; }
+
+    #week-label {
+      font-size: .78rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-align: center;
+      min-width: 130px;
+      line-height: 1.3;
+    }
+
+    #week-label span {
+      display: block;
+      font-size: .65rem;
+      color: var(--accent);
+      font-weight: 500;
+    }
 
     /* ── Name bar ── */
     #name-bar {
-      display: flex; align-items: center; gap: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
       padding: 10px 20px;
-      background: rgba(22,18,50,.8);
+      background: rgba(22, 18, 50, .8);
       border-bottom: 1px solid var(--border);
     }
-    #name-bar label { font-size: .78rem; color: var(--muted); white-space: nowrap; font-weight: 500; }
+
+    #name-bar label {
+      font-size: .78rem;
+      color: var(--muted);
+      white-space: nowrap;
+      font-weight: 500;
+    }
+
     #my-name {
-      flex: 1; max-width: 220px;
+      flex: 1;
+      max-width: 220px;
       padding: 8px 12px;
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 10px; color: var(--text);
-      font-size: .9rem; font-family: inherit; outline: none;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: .9rem;
+      font-family: inherit;
+      outline: none;
       transition: border-color .2s;
-      cursor: pointer; appearance: none; -webkit-appearance: none;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%237c6fa8' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
-      background-repeat: no-repeat; background-position: right 12px center;
+      background-repeat: no-repeat;
+      background-position: right 12px center;
       padding-right: 32px;
     }
-    #my-name:focus { border-color: var(--accent); }
-    #my-name option { background: var(--surface2); color: var(--text); }
-    .name-hint { font-size: .7rem; color: var(--muted); }
+
+    #my-name:focus {
+      border-color: var(--accent);
+    }
+
+    #my-name option {
+      background: var(--surface2);
+      color: var(--text);
+    }
+
+    .name-hint {
+      font-size: .7rem;
+      color: var(--muted);
+    }
 
     /* Copy-last-week button */
     #copy-last-week {
       margin-left: auto;
-      display: flex; align-items: center; gap: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
       padding: 7px 13px;
-      background: rgba(139,92,246,.1);
-      border: 1px solid rgba(139,92,246,.35);
+      background: rgba(139, 92, 246, .1);
+      border: 1px solid rgba(139, 92, 246, .35);
       border-radius: 20px;
       color: var(--accent);
-      font-size: .75rem; font-weight: 600;
-      cursor: pointer; font-family: inherit; white-space: nowrap;
+      font-size: .75rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      white-space: nowrap;
       -webkit-tap-highlight-color: transparent;
       transition: background .15s, border-color .15s, opacity .15s;
     }
-    #copy-last-week:hover { background: rgba(139,92,246,.2); border-color: var(--accent); }
-    #copy-last-week:disabled { opacity: .35; cursor: not-allowed; }
-    #copy-last-week .btn-icon { font-size: .9rem; }
+
+    #copy-last-week:hover {
+      background: rgba(139, 92, 246, .2);
+      border-color: var(--accent);
+    }
+
+    #copy-last-week:disabled {
+      opacity: .35;
+      cursor: not-allowed;
+    }
+
+    #copy-last-week .btn-icon {
+      font-size: .9rem;
+    }
 
     /* ── Main ── */
-    main { padding: 16px 16px calc(var(--safe-bot) + 24px); }
+    main {
+      padding: 16px 16px calc(var(--safe-bot) + 24px);
+    }
 
     /* ── Grid scroll wrapper ── */
     .grid-scroll {
-      overflow-x: auto; -webkit-overflow-scrolling: touch;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
       border-radius: var(--radius);
       padding-bottom: 4px;
     }
-    .grid-scroll::-webkit-scrollbar { height: 4px; }
-    .grid-scroll::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 4px; }
+
+    .grid-scroll::-webkit-scrollbar {
+      height: 4px;
+    }
+
+    .grid-scroll::-webkit-scrollbar-thumb {
+      background: var(--surface2);
+      border-radius: 4px;
+    }
 
     /* ── Calendar grid ── */
     .cal-grid {
@@ -145,15 +269,35 @@
 
     /* Day header cells */
     .day-head {
-      text-align: center; padding: 10px 6px;
+      text-align: center;
+      padding: 10px 6px;
       border-radius: 10px;
       background: var(--surface);
       border: 1px solid var(--border);
     }
-    .day-head.today { border-color: var(--accent); background: rgba(139,92,246,.12); }
-    .day-name { font-size: .78rem; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: .06em; }
-    .day-date { font-size: .68rem; color: var(--muted); margin-top: 2px; }
-    .day-head.today .day-name { color: var(--accent); }
+
+    .day-head.today {
+      border-color: var(--accent);
+      background: rgba(139, 92, 246, .12);
+    }
+
+    .day-name {
+      font-size: .78rem;
+      font-weight: 700;
+      color: var(--text);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    .day-date {
+      font-size: .68rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .day-head.today .day-name {
+      color: var(--accent);
+    }
 
 
     /* Slot cells */
@@ -163,215 +307,506 @@
       border-radius: var(--radius);
       padding: 10px;
       min-height: 90px;
-      display: flex; flex-direction: column; gap: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
       transition: border-color .2s;
       cursor: pointer;
       position: relative;
     }
-    .slot-cell:hover { border-color: rgba(139,92,246,.45); }
-    .slot-cell.has-me { border-color: var(--accent); background: rgba(139,92,246,.07); }
-    .slot-cell.today-col { background: rgba(139,92,246,.05); }
+
+    .slot-cell:hover {
+      border-color: rgba(139, 92, 246, .45);
+    }
+
+    .slot-cell.has-me {
+      border-color: var(--accent);
+      background: rgba(139, 92, 246, .07);
+    }
+
+    .slot-cell.today-col {
+      background: rgba(139, 92, 246, .05);
+    }
 
     /* Person chips */
-    .chips-wrap { display: flex; flex-wrap: wrap; gap: 5px; flex: 1; }
+    .chips-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      flex: 1;
+    }
+
     .chip {
-      display: inline-flex; align-items: center; gap: 5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
       padding: 4px 8px 4px 5px;
       border-radius: 20px;
-      font-size: .72rem; font-weight: 600;
+      font-size: .72rem;
+      font-weight: 600;
       border: 1.5px solid transparent;
       transition: opacity .15s;
       max-width: 160px;
       cursor: default;
     }
-    .chip.is-mine { cursor: pointer; }
-    .chip.is-mine:hover { filter: brightness(1.15); }
+
+    .chip.is-mine {
+      cursor: pointer;
+    }
+
+    .chip.is-mine:hover {
+      filter: brightness(1.15);
+    }
+
     .chip-avatar {
-      width: 18px; height: 18px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: .6rem; font-weight: 800; flex-shrink: 0;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .6rem;
+      font-weight: 800;
+      flex-shrink: 0;
       color: #fff;
     }
-    .chip-body { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-    .chip-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .chip-activity { font-size: .6rem; opacity: .75; white-space: nowrap; }
-    .chip-comment { font-size: .6rem; opacity: .6; font-style: italic; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100px; }
+
+    .chip-body {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      min-width: 0;
+    }
+
+    .chip-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .chip-activity {
+      font-size: .6rem;
+      opacity: .75;
+      white-space: nowrap;
+    }
+
+    .chip-comment {
+      font-size: .6rem;
+      opacity: .6;
+      font-style: italic;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 100px;
+    }
+
     .chip-del {
-      flex-shrink: 0; width: 14px; height: 14px;
-      border-radius: 50%; border: none;
-      display: flex; align-items: center; justify-content: center;
-      font-size: .6rem; cursor: pointer;
-      background: rgba(255,255,255,.15); color: inherit;
+      flex-shrink: 0;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .6rem;
+      cursor: pointer;
+      background: rgba(255, 255, 255, .15);
+      color: inherit;
       -webkit-tap-highlight-color: transparent;
       transition: background .15s;
       line-height: 1;
     }
-    .chip-del:hover { background: rgba(255,80,80,.4); }
+
+    .chip-del:hover {
+      background: rgba(255, 80, 80, .4);
+    }
 
     /* Activity picker popup */
     .picker-popup {
-      position: fixed; z-index: 600;
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 14px; padding: 8px;
-      box-shadow: 0 12px 40px rgba(0,0,0,.6);
-      display: none; flex-direction: column; gap: 4px;
+      position: fixed;
+      z-index: 600;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 8px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, .6);
+      display: none;
+      flex-direction: column;
+      gap: 4px;
       min-width: 160px;
     }
-    .picker-popup.open { display: flex; }
-    .picker-title { font-size: .7rem; color: var(--muted); font-weight: 600; padding: 4px 8px 6px; }
+
+    .picker-popup.open {
+      display: flex;
+    }
+
+    .picker-title {
+      font-size: .7rem;
+      color: var(--muted);
+      font-weight: 600;
+      padding: 4px 8px 6px;
+    }
+
     .picker-opt {
-      display: flex; align-items: center; gap: 8px;
-      padding: 8px 12px; border-radius: 10px;
-      font-size: .82rem; font-weight: 600; cursor: pointer;
-      border: none; background: transparent; color: var(--text);
-      font-family: inherit; text-align: left; width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: .82rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: var(--text);
+      font-family: inherit;
+      text-align: left;
+      width: 100%;
       transition: background .12s;
     }
-    .picker-opt:hover { background: rgba(139,92,246,.2); }
-    .picker-footer {
-      border-top: 1px solid var(--border); margin-top: 4px; padding-top: 6px;
+
+    .picker-opt:hover {
+      background: rgba(139, 92, 246, .2);
     }
+
+    .picker-footer {
+      border-top: 1px solid var(--border);
+      margin-top: 4px;
+      padding-top: 6px;
+    }
+
     .picker-configure {
-      width: 100%; padding: 7px 12px; border-radius: 10px;
-      font-size: .72rem; font-weight: 600; cursor: pointer;
-      border: none; background: transparent; color: var(--muted);
-      font-family: inherit; text-align: left;
+      width: 100%;
+      padding: 7px 12px;
+      border-radius: 10px;
+      font-size: .72rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-family: inherit;
+      text-align: left;
       transition: background .12s, color .12s;
     }
-    .picker-configure:hover { background: rgba(139,92,246,.15); color: var(--accent); }
+
+    .picker-configure:hover {
+      background: rgba(139, 92, 246, .15);
+      color: var(--accent);
+    }
 
     /* Activities settings modal */
-    .act-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; max-height: 240px; overflow-y: auto; }
+    .act-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+      max-height: 240px;
+      overflow-y: auto;
+    }
+
     .act-row {
-      display: flex; align-items: center; gap: 8px;
-      background: var(--surface); border-radius: 10px; padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      border-radius: 10px;
+      padding: 8px 10px;
     }
-    .act-row-label { flex: 1; font-size: .88rem; font-weight: 600; }
+
+    .act-row-label {
+      flex: 1;
+      font-size: .88rem;
+      font-weight: 600;
+    }
+
     .act-row-del {
-      width: 22px; height: 22px; border-radius: 50%; border: none;
-      background: rgba(255,80,80,.15); color: #f87171;
-      font-size: .7rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255, 80, 80, .15);
+      color: #f87171;
+      font-size: .7rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       transition: background .12s;
     }
-    .act-row-del:hover { background: rgba(255,80,80,.35); }
-    .act-add-row { display: flex; gap: 8px; }
+
+    .act-row-del:hover {
+      background: rgba(255, 80, 80, .35);
+    }
+
+    .act-add-row {
+      display: flex;
+      gap: 8px;
+    }
+
     .act-add-input {
-      flex: 1; padding: 9px 12px;
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 10px; color: var(--text); font-size: .88rem;
-      font-family: inherit; outline: none; transition: border-color .2s;
+      flex: 1;
+      padding: 9px 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: .88rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color .2s;
     }
-    .act-add-input:focus { border-color: var(--accent); }
+
+    .act-add-input:focus {
+      border-color: var(--accent);
+    }
+
     .act-add-btn {
-      padding: 9px 14px; border-radius: 10px; border: none;
-      background: rgba(139,92,246,.2); color: var(--accent);
-      font-size: .88rem; font-weight: 700; cursor: pointer; font-family: inherit;
+      padding: 9px 14px;
+      border-radius: 10px;
+      border: none;
+      background: rgba(139, 92, 246, .2);
+      color: var(--accent);
+      font-size: .88rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
       transition: background .12s;
     }
-    .act-add-btn:hover { background: rgba(139,92,246,.35); }
+
+    .act-add-btn:hover {
+      background: rgba(139, 92, 246, .35);
+    }
 
     /* Comment modal */
     .modal-overlay {
-      display: none; position: fixed; inset: 0; z-index: 700;
-      background: rgba(12,10,30,.85); backdrop-filter: blur(8px);
-      align-items: center; justify-content: center; padding: 24px;
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 700;
+      background: rgba(12, 10, 30, .85);
+      backdrop-filter: blur(8px);
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
     }
-    .modal-overlay.open { display: flex; }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
     .modal-card {
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 20px; padding: 24px; width: 100%; max-width: 360px;
-      box-shadow: 0 24px 60px rgba(0,0,0,.5);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+      width: 100%;
+      max-width: 360px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, .5);
     }
-    .modal-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 14px; }
+
+    .modal-card h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+
     #comment-input {
-      width: 100%; padding: 11px 13px;
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 12px; color: var(--text); font-size: .9rem;
-      font-family: inherit; outline: none; resize: none;
-      transition: border-color .2s; margin-bottom: 14px;
+      width: 100%;
+      padding: 11px 13px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: .9rem;
+      font-family: inherit;
+      outline: none;
+      resize: none;
+      transition: border-color .2s;
+      margin-bottom: 14px;
     }
-    #comment-input:focus { border-color: var(--accent); }
-    .modal-actions { display: flex; gap: 10px; }
+
+    #comment-input:focus {
+      border-color: var(--accent);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+    }
+
     .modal-actions button {
-      flex: 1; padding: 12px; border-radius: 12px;
-      font-size: .9rem; font-weight: 700; cursor: pointer; font-family: inherit;
-      border: none; transition: opacity .15s;
+      flex: 1;
+      padding: 12px;
+      border-radius: 12px;
+      font-size: .9rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      border: none;
+      transition: opacity .15s;
     }
-    #comment-cancel { background: var(--surface); color: var(--muted); }
-    #comment-save { background: linear-gradient(135deg,#8b5cf6,#6d28d9); color:#fff; box-shadow: 0 4px 20px var(--glow); }
+
+    #comment-cancel {
+      background: var(--surface);
+      color: var(--muted);
+    }
+
+    #comment-save {
+      background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+      color: #fff;
+      box-shadow: 0 4px 20px var(--glow);
+    }
 
     /* Add-me button inside cell */
     .add-me-btn {
       align-self: flex-end;
       margin-top: auto;
       padding: 4px 10px;
-      background: rgba(139,92,246,.12);
-      border: 1px dashed rgba(139,92,246,.35);
+      background: rgba(139, 92, 246, .12);
+      border: 1px dashed rgba(139, 92, 246, .35);
       border-radius: 20px;
       color: var(--accent);
-      font-size: .68rem; font-weight: 600;
-      cursor: pointer; font-family: inherit;
+      font-size: .68rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
       -webkit-tap-highlight-color: transparent;
       transition: background .15s, border-color .15s;
     }
-    .add-me-btn:hover { background: rgba(139,92,246,.22); border-color: var(--accent); }
-    .add-me-btn:disabled { opacity: .3; cursor: not-allowed; }
+
+    .add-me-btn:hover {
+      background: rgba(139, 92, 246, .22);
+      border-color: var(--accent);
+    }
+
+    .add-me-btn:disabled {
+      opacity: .3;
+      cursor: not-allowed;
+    }
 
     /* Empty corner cell */
-    .corner { background: transparent; }
+    .corner {
+      background: transparent;
+    }
 
     /* ── Toast ── */
     #toast {
-      position: fixed; bottom: calc(var(--safe-bot) + 20px); left: 50%;
+      position: fixed;
+      bottom: calc(var(--safe-bot) + 20px);
+      left: 50%;
       transform: translateX(-50%) translateY(60px);
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 40px; padding: 11px 22px;
-      font-size: .85rem; font-weight: 500;
-      opacity: 0; pointer-events: none; white-space: nowrap;
-      transition: transform .3s cubic-bezier(.34,1.56,.64,1), opacity .3s;
-      box-shadow: 0 8px 30px rgba(0,0,0,.5); z-index: 9999;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 40px;
+      padding: 11px 22px;
+      font-size: .85rem;
+      font-weight: 500;
+      opacity: 0;
+      pointer-events: none;
+      white-space: nowrap;
+      transition: transform .3s cubic-bezier(.34, 1.56, .64, 1), opacity .3s;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, .5);
+      z-index: 9999;
     }
-    #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+    #toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
 
     /* ── No-name overlay hint ── */
     #name-prompt {
       display: none;
-      position: fixed; inset: 0; z-index: 500;
-      background: rgba(12,10,30,.85); backdrop-filter: blur(8px);
-      align-items: center; justify-content: center; padding: 24px;
+      position: fixed;
+      inset: 0;
+      z-index: 500;
+      background: rgba(12, 10, 30, .85);
+      backdrop-filter: blur(8px);
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
     }
-    #name-prompt.visible { display: flex; }
+
+    #name-prompt.visible {
+      display: flex;
+    }
+
     .prompt-card {
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 20px; padding: 28px 24px; text-align: center;
-      max-width: 340px; width: 100%;
-      box-shadow: 0 24px 60px rgba(0,0,0,.5);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px 24px;
+      text-align: center;
+      max-width: 340px;
+      width: 100%;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, .5);
     }
-    .prompt-card h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: 6px; }
-    .prompt-card p { font-size: .82rem; color: var(--muted); margin-bottom: 18px; }
+
+    .prompt-card h2 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .prompt-card p {
+      font-size: .82rem;
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+
     #prompt-input {
-      width: 100%; padding: 13px; background: var(--surface);
-      border: 1px solid var(--border); border-radius: 12px;
-      color: var(--text); font-size: 1rem; font-family: inherit;
-      outline: none; margin-bottom: 12px; transition: border-color .2s;
-      cursor: pointer; appearance: none; -webkit-appearance: none;
+      width: 100%;
+      padding: 13px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 1rem;
+      font-family: inherit;
+      outline: none;
+      margin-bottom: 12px;
+      transition: border-color .2s;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%237c6fa8' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
-      background-repeat: no-repeat; background-position: right 14px center;
+      background-repeat: no-repeat;
+      background-position: right 14px center;
       padding-right: 36px;
     }
-    #prompt-input:focus { border-color: var(--accent); }
-    #prompt-input option { background: var(--surface); color: var(--text); }
+
+    #prompt-input:focus {
+      border-color: var(--accent);
+    }
+
+    #prompt-input option {
+      background: var(--surface);
+      color: var(--text);
+    }
+
     #prompt-submit {
-      width: 100%; padding: 14px;
+      width: 100%;
+      padding: 14px;
       background: linear-gradient(135deg, #8b5cf6, #6d28d9);
-      border: none; border-radius: 12px; color: #fff;
-      font-size: 1rem; font-weight: 700; cursor: pointer; font-family: inherit;
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
       box-shadow: 0 4px 20px var(--glow);
       transition: opacity .2s;
     }
-    #prompt-submit:active { opacity: .85; }
+
+    #prompt-submit:active {
+      opacity: .85;
+    }
   </style>
 </head>
+
 <body>
 
   <!-- Header -->
@@ -469,440 +904,443 @@
 
   <div id="toast"></div>
 
-<script type="module">
-import { initializeApp }  from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js';
-import { getFirestore, doc, setDoc, updateDoc, onSnapshot,
-         getDoc, deleteField }
-  from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js';
-
-// ── Firebase config ─────────────────────────────────────────────
-// TODO: Replace with your own Firebase project config
-// 1. Go to https://console.firebase.google.com
-// 2. Create a project named "knowplan"
-// 3. Add a Web app, copy the config here
-// 4. Enable Firestore Database in test mode
-const fbApp = initializeApp({
-  apiKey:            "AIzaSyCKvDzrn1pQ0dl03oT6qaJyr4cmvGJiI2k",
-  authDomain:        "knowplan-41fa9.firebaseapp.com",
-  projectId:         "knowplan-41fa9",
-  storageBucket:     "knowplan-41fa9.firebasestorage.app",
-  messagingSenderId: "667541416737",
-  appId:             "1:667541416737:web:8001add505c8e319feec60"
-});
-const db = getFirestore(fbApp);
-
-// ── Helpers ──────────────────────────────────────────────────────
-const $ = id => document.getElementById(id);
-
-function showToast(msg, ms = 2600) {
-  const t = $('toast'); t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), ms);
-}
-
-/** ISO week key: "2026-W18" */
-function getWeekKey(date = new Date()) {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  const wn = Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
-  return `${d.getUTCFullYear()}-W${String(wn).padStart(2, '0')}`;
-}
-
-/** Returns the Monday Date for a given week key */
-function weekMonday(weekKey) {
-  const [yr, wPart] = weekKey.split('-W');
-  const week = parseInt(wPart);
-  const jan4 = new Date(Date.UTC(+yr, 0, 4));
-  const jan4dow = jan4.getUTCDay() || 7;
-  const mon = new Date(jan4);
-  mon.setUTCDate(jan4.getUTCDate() - jan4dow + 1 + (week - 1) * 7);
-  return mon;
-}
-
-/** Navigate week key by ±1 */
-function offsetWeek(weekKey, delta) {
-  const mon = weekMonday(weekKey);
-  mon.setUTCDate(mon.getUTCDate() + delta * 7);
-  return getWeekKey(mon);
-}
-
-const DAYS  = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
-const SLOTS = [
-  { key: 'morning',   cls: 'morning' },
-  { key: 'afternoon', cls: 'afternoon' },
-];
-const DEFAULT_ACTIVITIES = [
-  { id: 'office',  label: 'Office' },
-  { id: 'remote',  label: 'Remote' },
-  { id: 'travel',  label: 'Travel' },
-  { id: 'sick',    label: 'Sick' },
-  { id: 'holiday', label: 'Holiday' },
-];
-
-const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
-function fmtDate(d) { return `${d.getUTCDate()} ${SHORT_MONTHS[d.getUTCMonth()]}`; }
-
-/** Consistent color from a name string */
-function nameColor(name) {
-  let h = 0;
-  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffffffff;
-  const hue = Math.abs(h) % 360;
-  return { bg: `hsl(${hue},65%,52%)`, fg: `hsl(${hue},65%,22%)` };
-}
-
-// ── State ────────────────────────────────────────────────────────
-let currentWeekKey = getWeekKey();
-let weekData      = {};   // { "d1_morning": { Cliff:{activity,comment}, ... }, ... }
-let myName        = localStorage.getItem('knowplan_name') || '';
-let userActivities = [...DEFAULT_ACTIVITIES];  // active user's list
-let activityCache  = {};  // { "KnowJunior": [...], "Reto": [...] } — in-session cache
-let unsubscribe   = null;
-
-// ── User activities (per-user Firestore) ─────────────────────────
-function userRef(name) { return doc(db, 'users', name); }
-
-async function loadUserActivities() {
-  // 1. Use in-session cache if available (avoids stale Firestore reads)
-  if (activityCache[myName]) {
-    userActivities = activityCache[myName];
-    return;
-  }
-  // 2. Otherwise fetch from Firestore
-  try {
-    const snap = await getDoc(userRef(myName));
-    if (snap.exists() && Array.isArray(snap.data().activities) && snap.data().activities.length) {
-      userActivities = snap.data().activities;
-    } else {
-      userActivities = [...DEFAULT_ACTIVITIES];
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js';
+    import {
+      getFirestore, doc, setDoc, updateDoc, onSnapshot,
+      getDoc, getDocFromServer, deleteField
     }
-  } catch { userActivities = [...DEFAULT_ACTIVITIES]; }
-  // Populate cache for next switch
-  activityCache[myName] = userActivities;
-}
+      from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js';
 
-async function saveUserActivities() {
-  try {
-    await setDoc(userRef(myName), { activities: userActivities }, { merge: true });
-    activityCache[myName] = userActivities;  // keep cache in sync
-    return true;
-  } catch (e) {
-    console.error(e);
-    showToast('Could not save activities — check connection');
-    return false;
-  }
-}
+    // ── Firebase config ─────────────────────────────────────────────
+    // TODO: Replace with your own Firebase project config
+    // 1. Go to https://console.firebase.google.com
+    // 2. Create a project named "knowplan"
+    // 3. Add a Web app, copy the config here
+    // 4. Enable Firestore Database in test mode
+    const fbApp = initializeApp({
+      apiKey: "AIzaSyCKvDzrn1pQ0dl03oT6qaJyr4cmvGJiI2k",
+      authDomain: "knowplan-41fa9.firebaseapp.com",
+      projectId: "knowplan-41fa9",
+      storageBucket: "knowplan-41fa9.firebasestorage.app",
+      messagingSenderId: "667541416737",
+      appId: "1:667541416737:web:8001add505c8e319feec60"
+    });
+    const db = getFirestore(fbApp);
 
-// ── Activities settings modal ─────────────────────────────────────
-let actDraft = [];   // working copy while modal is open
+    // ── Helpers ──────────────────────────────────────────────────────
+    const $ = id => document.getElementById(id);
 
-function openActModal() {
-  closePicker();
-  actDraft = userActivities.map(a => ({ ...a }));
-  renderActList();
-  $('act-modal').classList.add('open');
-  $('act-new-label').value = '';
-}
-function renderActList() {
-  const list = $('act-list');
-  list.innerHTML = '';
-  actDraft.forEach((act, i) => {
-    const row = document.createElement('div');
-    row.className = 'act-row';
-    row.innerHTML =
-      `<span class="act-row-label">${act.label}</span>` +
-      `<button class="act-row-del" data-i="${i}" title="Remove">x</button>`;
-    row.querySelector('.act-row-del').addEventListener('click', () => {
-      actDraft.splice(i, 1);
+    function showToast(msg, ms = 2600) {
+      const t = $('toast'); t.textContent = msg; t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), ms);
+    }
+
+    /** ISO week key: "2026-W18" */
+    function getWeekKey(date = new Date()) {
+      const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+      d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+      const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+      const wn = Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+      return `${d.getUTCFullYear()}-W${String(wn).padStart(2, '0')}`;
+    }
+
+    /** Returns the Monday Date for a given week key */
+    function weekMonday(weekKey) {
+      const [yr, wPart] = weekKey.split('-W');
+      const week = parseInt(wPart);
+      const jan4 = new Date(Date.UTC(+yr, 0, 4));
+      const jan4dow = jan4.getUTCDay() || 7;
+      const mon = new Date(jan4);
+      mon.setUTCDate(jan4.getUTCDate() - jan4dow + 1 + (week - 1) * 7);
+      return mon;
+    }
+
+    /** Navigate week key by ±1 */
+    function offsetWeek(weekKey, delta) {
+      const mon = weekMonday(weekKey);
+      mon.setUTCDate(mon.getUTCDate() + delta * 7);
+      return getWeekKey(mon);
+    }
+
+    const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+    const SLOTS = [
+      { key: 'morning', cls: 'morning' },
+      { key: 'afternoon', cls: 'afternoon' },
+    ];
+    const DEFAULT_ACTIVITIES = [
+      { id: 'office', label: 'Office' },
+      { id: 'remote', label: 'Remote' },
+      { id: 'travel', label: 'Travel' },
+      { id: 'sick', label: 'Sick' },
+      { id: 'holiday', label: 'Holiday' },
+    ];
+
+    const SHORT_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    function fmtDate(d) { return `${d.getUTCDate()} ${SHORT_MONTHS[d.getUTCMonth()]}`; }
+
+    /** Consistent color from a name string */
+    function nameColor(name) {
+      let h = 0;
+      for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffffffff;
+      const hue = Math.abs(h) % 360;
+      return { bg: `hsl(${hue},65%,52%)`, fg: `hsl(${hue},65%,22%)` };
+    }
+
+    // ── State ────────────────────────────────────────────────────────
+    let currentWeekKey = getWeekKey();
+    let weekData = {};   // { "d1_morning": { Cliff:{activity,comment}, ... }, ... }
+    let myName = localStorage.getItem('knowplan_name') || '';
+    let userActivities = [...DEFAULT_ACTIVITIES];  // active user's list
+    let activityCache = {};  // { "KnowJunior": [...], "Reto": [...] } — in-session cache
+    let unsubscribe = null;
+
+    // ── User activities (per-user Firestore) ─────────────────────────
+    function userRef(name) { return doc(db, 'users', name); }
+
+    async function loadUserActivities() {
+      // 1. Use in-session cache if available (avoids stale Firestore reads)
+      if (activityCache[myName]) {
+        userActivities = activityCache[myName];
+        return;
+      }
+      // 2. Otherwise fetch from Firestore
+      try {
+        const snap = await getDocFromServer(userRef(myName));
+        if (snap.exists() && Array.isArray(snap.data().activities) && snap.data().activities.length) {
+          userActivities = snap.data().activities;
+        } else {
+          userActivities = [...DEFAULT_ACTIVITIES];
+        }
+      } catch { userActivities = [...DEFAULT_ACTIVITIES]; }
+      // Populate cache for next switch
+      activityCache[myName] = userActivities;
+    }
+
+    async function saveUserActivities() {
+      try {
+        await setDoc(userRef(myName), { activities: userActivities }, { merge: true });
+        activityCache[myName] = userActivities;  // keep cache in sync
+        return true;
+      } catch (e) {
+        console.error(e);
+        showToast('Could not save activities — check connection');
+        return false;
+      }
+    }
+
+    // ── Activities settings modal ─────────────────────────────────────
+    let actDraft = [];   // working copy while modal is open
+
+    function openActModal() {
+      closePicker();
+      actDraft = userActivities.map(a => ({ ...a }));
+      renderActList();
+      $('act-modal').classList.add('open');
+      $('act-new-label').value = '';
+    }
+    function renderActList() {
+      const list = $('act-list');
+      list.innerHTML = '';
+      actDraft.forEach((act, i) => {
+        const row = document.createElement('div');
+        row.className = 'act-row';
+        row.innerHTML =
+          `<span class="act-row-label">${act.label}</span>` +
+          `<button class="act-row-del" data-i="${i}" title="Remove">x</button>`;
+        row.querySelector('.act-row-del').addEventListener('click', () => {
+          actDraft.splice(i, 1);
+          renderActList();
+        });
+        list.appendChild(row);
+      });
+    }
+    $('act-add-btn').addEventListener('click', () => {
+      const label = $('act-new-label').value.trim();
+      if (!label) return;
+      actDraft.push({ id: label.toLowerCase().replace(/\s+/g, '_'), label });
+      $('act-new-label').value = '';
       renderActList();
     });
-    list.appendChild(row);
-  });
-}
-$('act-add-btn').addEventListener('click', () => {
-  const label = $('act-new-label').value.trim();
-  if (!label) return;
-  actDraft.push({ id: label.toLowerCase().replace(/\s+/g, '_'), label });
-  $('act-new-label').value = '';
-  renderActList();
-});
-$('act-new-label').addEventListener('keydown', e => { if (e.key === 'Enter') $('act-add-btn').click(); });
-$('act-cancel').addEventListener('click', () => $('act-modal').classList.remove('open'));
-$('act-save').addEventListener('click', async () => {
-  if (!actDraft.length) { showToast('Add at least one activity'); return; }
-  const saveBtn = $('act-save');
-  saveBtn.disabled = true;
-  saveBtn.textContent = 'Saving...';
-  const prev = userActivities;
-  userActivities = actDraft;
-  const ok = await saveUserActivities();
-  saveBtn.disabled = false;
-  saveBtn.textContent = 'Save';
-  if (ok) {
-    $('act-modal').classList.remove('open');
-    showToast('Activities saved');
-    renderGrid();
-  } else {
-    userActivities = prev;
-  }
-});
-$('picker-configure').addEventListener('click', openActModal);
-
-// ── Name handling ────────────────────────────────────────────────
-function applyName(name) {
-  myName = name.trim();
-  if (myName) {
-    localStorage.setItem('knowplan_name', myName);
-    $('my-name').value = myName;
-    $('name-prompt').classList.remove('visible');
-    loadUserActivities().then(() => renderGrid());
-  }
-}
-
-$('my-name').addEventListener('change', () => applyName($('my-name').value));
-
-$('prompt-submit').addEventListener('click', () => applyName($('prompt-input').value));
-$('prompt-input').addEventListener('change', () => {
-  if ($('prompt-input').value) applyName($('prompt-input').value);
-});
-
-// ── Week navigation ──────────────────────────────────────────────
-function updateWeekLabel() {
-  const mon = weekMonday(currentWeekKey);
-  const fri = new Date(mon); fri.setUTCDate(mon.getUTCDate() + 4);
-  $('week-label').childNodes[0].textContent = `${fmtDate(mon)} – ${fmtDate(fri)} ${fri.getUTCFullYear()}`;
-  const thisWeek = getWeekKey();
-  $('week-tag').textContent = currentWeekKey === thisWeek ? 'This week' : currentWeekKey;
-}
-
-$('prev-week').addEventListener('click', () => {
-  currentWeekKey = offsetWeek(currentWeekKey, -1);
-  subscribeWeek();
-});
-$('next-week').addEventListener('click', () => {
-  currentWeekKey = offsetWeek(currentWeekKey, +1);
-  subscribeWeek();
-});
-
-// ── Firestore ────────────────────────────────────────────────────
-function weekRef() { return doc(db, 'weeks', currentWeekKey); }
-
-function subscribeWeek() {
-  if (unsubscribe) unsubscribe();
-  weekData = {};
-  renderGrid();
-  updateWeekLabel();
-  unsubscribe = onSnapshot(weekRef(), snap => {
-    weekData = snap.exists() ? snap.data() : {};
-    renderGrid();
-  }, err => {
-    console.error(err);
-    showToast('Could not load — check Firebase config');
-  });
-}
-
-// ── Activity Picker ─────────────────────────────────────────────
-let pickerCleanup = null;
-function showActivityPicker(anchorEl, dayIdx, slotKey) {
-  const picker = $('activity-picker');
-  // Remove old option buttons
-  picker.querySelectorAll('.picker-opt').forEach(el => el.remove());
-  // Re-insert options before the footer
-  const footer = picker.querySelector('.picker-footer');
-  userActivities.forEach(act => {
-    const btn = document.createElement('button');
-    btn.className = 'picker-opt';
-    btn.textContent = act.label;
-    btn.addEventListener('click', async () => {
-      closePicker();
-      await addEntry(dayIdx, slotKey, act);
-    });
-    picker.insertBefore(btn, footer);
-  });
-  // Position near anchor
-  const r = anchorEl.getBoundingClientRect();
-  picker.style.top  = (r.bottom + 6) + 'px';
-  picker.style.left = Math.max(8, r.left) + 'px';
-  picker.classList.add('open');
-  if (pickerCleanup) pickerCleanup();
-  const close = e => { if (!picker.contains(e.target) && e.target !== anchorEl) closePicker(); };
-  document.addEventListener('click', close, { capture: true, once: true });
-  pickerCleanup = () => { document.removeEventListener('click', close, { capture: true }); };
-}
-function closePicker() {
-  $('activity-picker').classList.remove('open');
-  if (pickerCleanup) { pickerCleanup(); pickerCleanup = null; }
-}
-
-// ── Comment Modal ────────────────────────────────────────────────
-let commentCtx = null; // {dayIdx, slotKey}
-function showCommentModal(dayIdx, slotKey) {
-  commentCtx = { dayIdx, slotKey };
-  const entry = (weekData[`d${dayIdx}_${slotKey}`] || {})[myName] || {};
-  $('comment-input').value = entry.comment || '';
-  $('comment-modal').classList.add('open');
-  $('comment-input').focus();
-}
-$('comment-cancel').addEventListener('click', () => $('comment-modal').classList.remove('open'));
-$('comment-save').addEventListener('click', async () => {
-  if (!commentCtx) return;
-  $('comment-modal').classList.remove('open');
-  const { dayIdx, slotKey } = commentCtx;
-  const field = `d${dayIdx}_${slotKey}.${myName}.comment`;
-  try { await updateDoc(weekRef(), { [field]: $('comment-input').value.trim() }); }
-  catch (e) { console.error(e); showToast('⚠️ Save failed'); }
-  commentCtx = null;
-});
-
-// ── Firestore helpers ────────────────────────────────────────────
-async function addEntry(dayIdx, slotKey, act) {
-  if (!myName) { showPrompt(); return; }
-  const field    = `d${dayIdx}_${slotKey}.${myName}`;
-  const existing = ((weekData[`d${dayIdx}_${slotKey}`] || {})[myName]);
-  const comment  = existing ? (existing.comment || '') : '';
-  const entry    = { activity: act.id, activityLabel: act.label, comment };
-  try { await updateDoc(weekRef(), { [field]: entry }); }
-  catch { try { await setDoc(weekRef(), { [`d${dayIdx}_${slotKey}`]: { [myName]: entry } }, { merge: true }); } catch (e) { console.error(e); showToast('Save failed'); } }
-}
-async function removeEntry(dayIdx, slotKey, name) {
-  const field = `d${dayIdx}_${slotKey}.${name}`;
-  try { await updateDoc(weekRef(), { [field]: deleteField() }); }
-  catch (e) { console.error(e); showToast('⚠️ Remove failed'); }
-}
-
-// ── Copy last week ───────────────────────────────────────────────
-async function copyLastWeek() {
-  if (!myName) { showPrompt(); return; }
-  const btn = $('copy-last-week');
-  btn.disabled = true;
-  btn.textContent = 'Copying...';
-  try {
-    const lastSnap = await getDoc(doc(db, 'weeks', offsetWeek(currentWeekKey, -1)));
-    if (!lastSnap.exists()) { showToast('No data found for last week'); return; }
-    const lastData = lastSnap.data();
-    const updates = {};
-    for (let di = 1; di <= 5; di++) {
-      for (const slot of ['morning', 'afternoon']) {
-        const fld = `d${di}_${slot}`;
-        const lastSlot = lastData[fld] || {};
-        if (lastSlot[myName] && !((weekData[fld] || {})[myName])) {
-          updates[`${fld}.${myName}`] = { activity: lastSlot[myName].activity || 'office', comment: '' };
-        }
-      }
-    }
-    if (!Object.keys(updates).length) { showToast('Already up-to-date (or no slots last week)'); return; }
-    await updateDoc(weekRef(), updates);
-    showToast(`Copied ${Object.keys(updates).length} slot(s) from last week!`);
-  } catch (e) { console.error(e); showToast('Copy failed'); }
-  finally { btn.disabled = false; btn.textContent = 'Copy last week'; }
-}
-$('copy-last-week').addEventListener('click', copyLastWeek);
-
-// ── Render ────────────────────────────────────────────────────────
-function renderGrid() {
-  const grid = $('cal-grid');
-  grid.innerHTML = '';
-  const today      = new Date();
-  const todayKey   = getWeekKey(today);
-  const todayDay   = today.getDay();
-  const mon        = weekMonday(currentWeekKey);
-  const isThisWeek = currentWeekKey === todayKey;
-
-  // Row 0: day headers (no corner cell)
-  for (let di = 0; di < 5; di++) {
-    const d = new Date(mon); d.setUTCDate(mon.getUTCDate() + di);
-    const isToday = isThisWeek && (di + 1) === (todayDay || 7);
-    const head = document.createElement('div');
-    head.className = 'day-head' + (isToday ? ' today' : '');
-    head.innerHTML = `<div class="day-name">${DAYS[di]}</div><div class="day-date">${fmtDate(d)}</div>`;
-    grid.appendChild(head);
-  }
-
-  // Rows 1-2: 5 cells per slot (no label column)
-  SLOTS.forEach(slot => {
-    for (let di = 0; di < 5; di++) {
-      const dayIdx  = di + 1;
-      const field   = `d${dayIdx}_${slot.key}`;
-      const slotMap = weekData[field] || {};      // { Cliff:{activity,comment}, ... }
-      const isMeHere = myName && myName in slotMap;
-      const isToday  = isThisWeek && dayIdx === (todayDay || 7);
-
-      const cell = document.createElement('div');
-      cell.className = 'slot-cell' + (isMeHere ? ' has-me' : '') + (isToday ? ' today-col' : '');
-
-      // Chips
-      const wrap = document.createElement('div');
-      wrap.className = 'chips-wrap';
-      Object.entries(slotMap).forEach(([name, entry]) => {
-        const c    = nameColor(name);
-        // Use the label stored in the entry itself — viewer-independent
-        const actLabel = entry.activityLabel || entry.activity || '?';
-        const isMe = name === myName;
-        const chip = document.createElement('div');
-        chip.className = 'chip' + (isMe ? ' is-mine' : '');
-        chip.style.cssText = `background:${c.bg}22;border-color:${c.bg}66;color:${c.bg}`;
-        chip.innerHTML =
-          `<div class="chip-avatar" style="background:${c.bg}">${name[0].toUpperCase()}</div>` +
-          `<div class="chip-body">` +
-            `<span class="chip-name">${name}</span>` +
-            `<span class="chip-activity">${actLabel}</span>` +
-            (entry.comment ? `<span class="chip-comment">${entry.comment}</span>` : '') +
-          `</div>` +
-          (isMe ? `<button class="chip-del" title="Remove me">x</button>` : '');
-        if (isMe) {
-          chip.querySelector('.chip-del').addEventListener('click', e => { e.stopPropagation(); removeEntry(dayIdx, slot.key, name); });
-          chip.addEventListener('click', e => { e.stopPropagation(); showCommentModal(dayIdx, slot.key); });
-        }
-        wrap.appendChild(chip);
-      });
-      cell.appendChild(wrap);
-
-      // Add-me / I'm here button
-      const btn = document.createElement('button');
-      btn.className = 'add-me-btn';
-      btn.disabled = !myName;
-      if (isMeHere) {
-        btn.textContent = 'I\'m here';
-        btn.style.cssText = 'border-style:solid;color:#a78bfa;border-color:#a78bfa66;background:rgba(139,92,246,.15)';
-        btn.addEventListener('click', e => { e.stopPropagation(); removeEntry(dayIdx, slot.key, myName); });
+    $('act-new-label').addEventListener('keydown', e => { if (e.key === 'Enter') $('act-add-btn').click(); });
+    $('act-cancel').addEventListener('click', () => $('act-modal').classList.remove('open'));
+    $('act-save').addEventListener('click', async () => {
+      if (!actDraft.length) { showToast('Add at least one activity'); return; }
+      const saveBtn = $('act-save');
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving...';
+      const prev = userActivities;
+      userActivities = actDraft;
+      const ok = await saveUserActivities();
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Save';
+      if (ok) {
+        $('act-modal').classList.remove('open');
+        showToast('Activities saved');
+        renderGrid();
       } else {
-        btn.textContent = '+ Add me';
-        btn.addEventListener('click', e => { e.stopPropagation(); showActivityPicker(btn, dayIdx, slot.key); });
+        userActivities = prev;
       }
-      cell.appendChild(btn);
-      grid.appendChild(cell);
+    });
+    $('picker-configure').addEventListener('click', openActModal);
+
+    // ── Name handling ────────────────────────────────────────────────
+    function applyName(name) {
+      myName = name.trim();
+      if (myName) {
+        localStorage.setItem('knowplan_name', myName);
+        $('my-name').value = myName;
+        $('name-prompt').classList.remove('visible');
+        loadUserActivities().then(() => renderGrid());
+      }
     }
-  });
-}
 
-// ── Name prompt ──────────────────────────────────────────────────
-function showPrompt() {
-  $('name-prompt').classList.add('visible');
-  $('prompt-input').focus();
-  // Pre-select in prompt if bar already has a value
-  if ($('my-name').value) $('prompt-input').value = $('my-name').value;
-}
+    $('my-name').addEventListener('change', () => applyName($('my-name').value));
 
-// ── Init ─────────────────────────────────────────────────────────
-if (myName) {
-  const opt = [...$('my-name').options].find(o => o.value === myName);
-  if (opt) {
-    $('my-name').value = myName;
-    loadUserActivities().then(subscribeWeek);
-  } else {
-    myName = '';
-    localStorage.removeItem('knowplan_name');
-    showPrompt();
-    subscribeWeek();
-  }
-} else {
-  showPrompt();
-  subscribeWeek();
-}
+    $('prompt-submit').addEventListener('click', () => applyName($('prompt-input').value));
+    $('prompt-input').addEventListener('change', () => {
+      if ($('prompt-input').value) applyName($('prompt-input').value);
+    });
 
-// subscribeWeek called above in each branch
+    // ── Week navigation ──────────────────────────────────────────────
+    function updateWeekLabel() {
+      const mon = weekMonday(currentWeekKey);
+      const fri = new Date(mon); fri.setUTCDate(mon.getUTCDate() + 4);
+      $('week-label').childNodes[0].textContent = `${fmtDate(mon)} – ${fmtDate(fri)} ${fri.getUTCFullYear()}`;
+      const thisWeek = getWeekKey();
+      $('week-tag').textContent = currentWeekKey === thisWeek ? 'This week' : currentWeekKey;
+    }
 
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(console.warn);
-</script>
+    $('prev-week').addEventListener('click', () => {
+      currentWeekKey = offsetWeek(currentWeekKey, -1);
+      subscribeWeek();
+    });
+    $('next-week').addEventListener('click', () => {
+      currentWeekKey = offsetWeek(currentWeekKey, +1);
+      subscribeWeek();
+    });
+
+    // ── Firestore ────────────────────────────────────────────────────
+    function weekRef() { return doc(db, 'weeks', currentWeekKey); }
+
+    function subscribeWeek() {
+      if (unsubscribe) unsubscribe();
+      weekData = {};
+      renderGrid();
+      updateWeekLabel();
+      unsubscribe = onSnapshot(weekRef(), snap => {
+        weekData = snap.exists() ? snap.data() : {};
+        renderGrid();
+      }, err => {
+        console.error(err);
+        showToast('Could not load — check Firebase config');
+      });
+    }
+
+    // ── Activity Picker ─────────────────────────────────────────────
+    let pickerCleanup = null;
+    function showActivityPicker(anchorEl, dayIdx, slotKey) {
+      const picker = $('activity-picker');
+      // Remove old option buttons
+      picker.querySelectorAll('.picker-opt').forEach(el => el.remove());
+      // Re-insert options before the footer
+      const footer = picker.querySelector('.picker-footer');
+      userActivities.forEach(act => {
+        const btn = document.createElement('button');
+        btn.className = 'picker-opt';
+        btn.textContent = act.label;
+        btn.addEventListener('click', async () => {
+          closePicker();
+          await addEntry(dayIdx, slotKey, act);
+        });
+        picker.insertBefore(btn, footer);
+      });
+      // Position near anchor
+      const r = anchorEl.getBoundingClientRect();
+      picker.style.top = (r.bottom + 6) + 'px';
+      picker.style.left = Math.max(8, r.left) + 'px';
+      picker.classList.add('open');
+      if (pickerCleanup) pickerCleanup();
+      const close = e => { if (!picker.contains(e.target) && e.target !== anchorEl) closePicker(); };
+      document.addEventListener('click', close, { capture: true, once: true });
+      pickerCleanup = () => { document.removeEventListener('click', close, { capture: true }); };
+    }
+    function closePicker() {
+      $('activity-picker').classList.remove('open');
+      if (pickerCleanup) { pickerCleanup(); pickerCleanup = null; }
+    }
+
+    // ── Comment Modal ────────────────────────────────────────────────
+    let commentCtx = null; // {dayIdx, slotKey}
+    function showCommentModal(dayIdx, slotKey) {
+      commentCtx = { dayIdx, slotKey };
+      const entry = (weekData[`d${dayIdx}_${slotKey}`] || {})[myName] || {};
+      $('comment-input').value = entry.comment || '';
+      $('comment-modal').classList.add('open');
+      $('comment-input').focus();
+    }
+    $('comment-cancel').addEventListener('click', () => $('comment-modal').classList.remove('open'));
+    $('comment-save').addEventListener('click', async () => {
+      if (!commentCtx) return;
+      $('comment-modal').classList.remove('open');
+      const { dayIdx, slotKey } = commentCtx;
+      const field = `d${dayIdx}_${slotKey}.${myName}.comment`;
+      try { await updateDoc(weekRef(), { [field]: $('comment-input').value.trim() }); }
+      catch (e) { console.error(e); showToast('⚠️ Save failed'); }
+      commentCtx = null;
+    });
+
+    // ── Firestore helpers ────────────────────────────────────────────
+    async function addEntry(dayIdx, slotKey, act) {
+      if (!myName) { showPrompt(); return; }
+      const field = `d${dayIdx}_${slotKey}.${myName}`;
+      const existing = ((weekData[`d${dayIdx}_${slotKey}`] || {})[myName]);
+      const comment = existing ? (existing.comment || '') : '';
+      const entry = { activity: act.id, activityLabel: act.label, comment };
+      try { await updateDoc(weekRef(), { [field]: entry }); }
+      catch { try { await setDoc(weekRef(), { [`d${dayIdx}_${slotKey}`]: { [myName]: entry } }, { merge: true }); } catch (e) { console.error(e); showToast('Save failed'); } }
+    }
+    async function removeEntry(dayIdx, slotKey, name) {
+      const field = `d${dayIdx}_${slotKey}.${name}`;
+      try { await updateDoc(weekRef(), { [field]: deleteField() }); }
+      catch (e) { console.error(e); showToast('⚠️ Remove failed'); }
+    }
+
+    // ── Copy last week ───────────────────────────────────────────────
+    async function copyLastWeek() {
+      if (!myName) { showPrompt(); return; }
+      const btn = $('copy-last-week');
+      btn.disabled = true;
+      btn.textContent = 'Copying...';
+      try {
+        const lastSnap = await getDoc(doc(db, 'weeks', offsetWeek(currentWeekKey, -1)));
+        if (!lastSnap.exists()) { showToast('No data found for last week'); return; }
+        const lastData = lastSnap.data();
+        const updates = {};
+        for (let di = 1; di <= 5; di++) {
+          for (const slot of ['morning', 'afternoon']) {
+            const fld = `d${di}_${slot}`;
+            const lastSlot = lastData[fld] || {};
+            if (lastSlot[myName] && !((weekData[fld] || {})[myName])) {
+              updates[`${fld}.${myName}`] = { activity: lastSlot[myName].activity || 'office', comment: '' };
+            }
+          }
+        }
+        if (!Object.keys(updates).length) { showToast('Already up-to-date (or no slots last week)'); return; }
+        await updateDoc(weekRef(), updates);
+        showToast(`Copied ${Object.keys(updates).length} slot(s) from last week!`);
+      } catch (e) { console.error(e); showToast('Copy failed'); }
+      finally { btn.disabled = false; btn.textContent = 'Copy last week'; }
+    }
+    $('copy-last-week').addEventListener('click', copyLastWeek);
+
+    // ── Render ────────────────────────────────────────────────────────
+    function renderGrid() {
+      const grid = $('cal-grid');
+      grid.innerHTML = '';
+      const today = new Date();
+      const todayKey = getWeekKey(today);
+      const todayDay = today.getDay();
+      const mon = weekMonday(currentWeekKey);
+      const isThisWeek = currentWeekKey === todayKey;
+
+      // Row 0: day headers (no corner cell)
+      for (let di = 0; di < 5; di++) {
+        const d = new Date(mon); d.setUTCDate(mon.getUTCDate() + di);
+        const isToday = isThisWeek && (di + 1) === (todayDay || 7);
+        const head = document.createElement('div');
+        head.className = 'day-head' + (isToday ? ' today' : '');
+        head.innerHTML = `<div class="day-name">${DAYS[di]}</div><div class="day-date">${fmtDate(d)}</div>`;
+        grid.appendChild(head);
+      }
+
+      // Rows 1-2: 5 cells per slot (no label column)
+      SLOTS.forEach(slot => {
+        for (let di = 0; di < 5; di++) {
+          const dayIdx = di + 1;
+          const field = `d${dayIdx}_${slot.key}`;
+          const slotMap = weekData[field] || {};      // { Cliff:{activity,comment}, ... }
+          const isMeHere = myName && myName in slotMap;
+          const isToday = isThisWeek && dayIdx === (todayDay || 7);
+
+          const cell = document.createElement('div');
+          cell.className = 'slot-cell' + (isMeHere ? ' has-me' : '') + (isToday ? ' today-col' : '');
+
+          // Chips
+          const wrap = document.createElement('div');
+          wrap.className = 'chips-wrap';
+          Object.entries(slotMap).forEach(([name, entry]) => {
+            const c = nameColor(name);
+            // Use the label stored in the entry itself — viewer-independent
+            const actLabel = entry.activityLabel || entry.activity || '?';
+            const isMe = name === myName;
+            const chip = document.createElement('div');
+            chip.className = 'chip' + (isMe ? ' is-mine' : '');
+            chip.style.cssText = `background:${c.bg}22;border-color:${c.bg}66;color:${c.bg}`;
+            chip.innerHTML =
+              `<div class="chip-avatar" style="background:${c.bg}">${name[0].toUpperCase()}</div>` +
+              `<div class="chip-body">` +
+              `<span class="chip-name">${name}</span>` +
+              `<span class="chip-activity">${actLabel}</span>` +
+              (entry.comment ? `<span class="chip-comment">${entry.comment}</span>` : '') +
+              `</div>` +
+              (isMe ? `<button class="chip-del" title="Remove me">x</button>` : '');
+            if (isMe) {
+              chip.querySelector('.chip-del').addEventListener('click', e => { e.stopPropagation(); removeEntry(dayIdx, slot.key, name); });
+              chip.addEventListener('click', e => { e.stopPropagation(); showCommentModal(dayIdx, slot.key); });
+            }
+            wrap.appendChild(chip);
+          });
+          cell.appendChild(wrap);
+
+          // Add-me / I'm here button
+          const btn = document.createElement('button');
+          btn.className = 'add-me-btn';
+          btn.disabled = !myName;
+          if (isMeHere) {
+            btn.textContent = 'I\'m here';
+            btn.style.cssText = 'border-style:solid;color:#a78bfa;border-color:#a78bfa66;background:rgba(139,92,246,.15)';
+            btn.addEventListener('click', e => { e.stopPropagation(); removeEntry(dayIdx, slot.key, myName); });
+          } else {
+            btn.textContent = '+ Add me';
+            btn.addEventListener('click', e => { e.stopPropagation(); showActivityPicker(btn, dayIdx, slot.key); });
+          }
+          cell.appendChild(btn);
+          grid.appendChild(cell);
+        }
+      });
+    }
+
+    // ── Name prompt ──────────────────────────────────────────────────
+    function showPrompt() {
+      $('name-prompt').classList.add('visible');
+      $('prompt-input').focus();
+      // Pre-select in prompt if bar already has a value
+      if ($('my-name').value) $('prompt-input').value = $('my-name').value;
+    }
+
+    // ── Init ─────────────────────────────────────────────────────────
+    if (myName) {
+      const opt = [...$('my-name').options].find(o => o.value === myName);
+      if (opt) {
+        $('my-name').value = myName;
+        loadUserActivities().then(subscribeWeek);
+      } else {
+        myName = '';
+        localStorage.removeItem('knowplan_name');
+        showPrompt();
+        subscribeWeek();
+      }
+    } else {
+      showPrompt();
+      subscribeWeek();
+    }
+
+    // subscribeWeek called above in each branch
+
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(console.warn);
+  </script>
 </body>
+
 </html>
