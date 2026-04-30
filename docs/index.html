@@ -819,9 +819,11 @@ function renderGrid() {
             `<span class="chip-activity">${act.label}</span>` +
             (entry.comment ? `<span class="chip-comment">${entry.comment}</span>` : '') +
           `</div>` +
-          `<button class="chip-del" title="Remove ${name}">✕</button>`;
-        chip.querySelector('.chip-del').addEventListener('click', e => { e.stopPropagation(); removeEntry(dayIdx, slot.key, name); });
-        if (isMe) chip.addEventListener('click', e => { e.stopPropagation(); showCommentModal(dayIdx, slot.key); });
+          (isMe ? `<button class="chip-del" title="Remove me">x</button>` : '');
+        if (isMe) {
+          chip.querySelector('.chip-del').addEventListener('click', e => { e.stopPropagation(); removeEntry(dayIdx, slot.key, name); });
+          chip.addEventListener('click', e => { e.stopPropagation(); showCommentModal(dayIdx, slot.key); });
+        }
         wrap.appendChild(chip);
       });
       cell.appendChild(wrap);
