@@ -1235,7 +1235,16 @@
           }
         }
         if (!Object.keys(updates).length) { showToast('Already up-to-date (or no slots last week)'); return; }
-        await updateDoc(weekRef(), updates);
+        try {
+          await updateDoc(weekRef(), updates);
+        } catch {
+          // Current week doc doesn't exist yet — create it
+          await setDoc(weekRef(), Object.entries(updates).reduce((acc, [k, v]) => {
+            const [fld, name] = k.split('.');
+            acc[fld] = { ...(acc[fld] || {}), [name]: v };
+            return acc;
+          }, {}), { merge: true });
+        }
         showToast(`Copied ${Object.keys(updates).length} slot(s) from last week!`);
       } catch (e) { console.error(e); showToast('Copy failed'); }
       finally { btn.disabled = false; btn.textContent = 'Copy last week'; }
