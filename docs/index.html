@@ -628,7 +628,10 @@
       background: rgba(34,197,94,.1);
       border-color: rgba(34,197,94,.45);
       color: #4ade80;
-      cursor: default;
+      cursor: pointer;
+    }
+    .gipfel-badge.fulfilled:hover {
+      background: rgba(34,197,94,.2);
     }
     /* Gipfel popover */
     #gipfel-pop {
@@ -1546,10 +1549,16 @@
           .filter(e => e.activity === 'kgb').length;
         const gipfelData = weekData[`gipfel_d${dayIdx}`];
         if (gipfelData) {
-          // Already fulfilled
+          // Already fulfilled — click to undo
           const badge = document.createElement('div');
           badge.className = 'gipfel-badge fulfilled';
           badge.innerHTML = `Gipfelstand = ${gipfelData.count}<br>Danke ${gipfelData.by} 🙏`;
+          badge.title = 'Click to undo';
+          badge.addEventListener('click', async e => {
+            e.stopPropagation();
+            try { await updateDoc(weekRef(), { [`gipfel_d${dayIdx}`]: deleteField() }); }
+            catch (err) { console.error(err); showToast('⚠️ Could not undo'); }
+          });
           head.appendChild(badge);
         } else if (kgbCount > 0) {
           // Required, not yet done
