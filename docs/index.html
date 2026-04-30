@@ -96,9 +96,13 @@
       border-radius: 10px; color: var(--text);
       font-size: .9rem; font-family: inherit; outline: none;
       transition: border-color .2s;
+      cursor: pointer; appearance: none; -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%237c6fa8' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 12px center;
+      padding-right: 32px;
     }
-    #my-name::placeholder { color: var(--muted); }
     #my-name:focus { border-color: var(--accent); }
+    #my-name option { background: var(--surface2); color: var(--text); }
     .name-hint { font-size: .7rem; color: var(--muted); }
 
     /* ── Main ── */
@@ -247,8 +251,13 @@
       border: 1px solid var(--border); border-radius: 12px;
       color: var(--text); font-size: 1rem; font-family: inherit;
       outline: none; margin-bottom: 12px; transition: border-color .2s;
+      cursor: pointer; appearance: none; -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%237c6fa8' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 14px center;
+      padding-right: 36px;
     }
     #prompt-input:focus { border-color: var(--accent); }
+    #prompt-input option { background: var(--surface); color: var(--text); }
     #prompt-submit {
       width: 100%; padding: 14px;
       background: linear-gradient(135deg, #8b5cf6, #6d28d9);
@@ -278,7 +287,16 @@
   <!-- Name bar -->
   <div id="name-bar">
     <label for="my-name">👤 You:</label>
-    <input id="my-name" type="text" placeholder="Enter your name…" autocomplete="off" maxlength="30" />
+    <select id="my-name">
+      <option value="">— Choose your name —</option>
+      <option value="Cliff">Cliff</option>
+      <option value="Jonas">Jonas</option>
+      <option value="Markus">Markus</option>
+      <option value="Patrick">Patrick</option>
+      <option value="Reto">Reto</option>
+      <option value="Rolf">Rolf</option>
+      <option value="KnowJunior">KnowJunior</option>
+    </select>
     <span class="name-hint">Tap any slot to add yourself</span>
   </div>
 
@@ -295,8 +313,17 @@
   <div id="name-prompt">
     <div class="prompt-card">
       <h2>👋 Welcome to KnowPlan</h2>
-      <p>Enter your name to start adding yourself to the shared calendar.</p>
-      <input id="prompt-input" type="text" placeholder="Your name…" maxlength="30" autocomplete="off" />
+      <p>Choose your name to start adding yourself to the shared calendar.</p>
+      <select id="prompt-input">
+        <option value="">— Select your name —</option>
+        <option value="Cliff">Cliff</option>
+        <option value="Jonas">Jonas</option>
+        <option value="Markus">Markus</option>
+        <option value="Patrick">Patrick</option>
+        <option value="Reto">Reto</option>
+        <option value="Rolf">Rolf</option>
+        <option value="KnowJunior">KnowJunior</option>
+      </select>
       <button id="prompt-submit">Let's go →</button>
     </div>
   </div>
@@ -396,11 +423,10 @@ function applyName(name) {
 }
 
 $('my-name').addEventListener('change', () => applyName($('my-name').value));
-$('my-name').addEventListener('blur',   () => applyName($('my-name').value));
 
 $('prompt-submit').addEventListener('click', () => applyName($('prompt-input').value));
-$('prompt-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') applyName($('prompt-input').value);
+$('prompt-input').addEventListener('change', () => {
+  if ($('prompt-input').value) applyName($('prompt-input').value);
 });
 
 // ── Week navigation ──────────────────────────────────────────────
@@ -557,11 +583,21 @@ function renderGrid() {
 function showPrompt() {
   $('name-prompt').classList.add('visible');
   $('prompt-input').focus();
+  // Pre-select in prompt if bar already has a value
+  if ($('my-name').value) $('prompt-input').value = $('my-name').value;
 }
 
 // ── Init ─────────────────────────────────────────────────────────
 if (myName) {
-  $('my-name').value = myName;
+  // Restore saved selection — only if it's still in the list
+  const opt = [...$('my-name').options].find(o => o.value === myName);
+  if (opt) {
+    $('my-name').value = myName;
+  } else {
+    myName = '';
+    localStorage.removeItem('knowplan_name');
+    showPrompt();
+  }
 } else {
   showPrompt();
 }
