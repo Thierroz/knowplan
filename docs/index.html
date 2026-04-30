@@ -1308,7 +1308,7 @@
           btn.className = 'add-me-btn';
           btn.disabled = !myName;
           if (isMeHere) {
-            btn.textContent = 'I\'m here';
+            btn.textContent = 'Remove me';
             btn.style.cssText = 'border-style:solid;color:#a78bfa;border-color:#a78bfa66;background:rgba(139,92,246,.15)';
             btn.addEventListener('click', e => { e.stopPropagation(); removeEntry(dayIdx, slot.key, myName); });
           } else {
