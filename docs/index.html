@@ -328,148 +328,132 @@
       border-radius: 4px;
     }
 
-    /* ── Calendar grid ── */
+    /* ── Calendar grid: name column + 10 slot columns ── */
     .cal-grid {
       display: grid;
-      grid-template-columns: repeat(5, minmax(150px, 1fr));
-      gap: 6px;
-      min-width: 750px;
-    }
-
-    /* Day header cells */
-    .day-head {
-      text-align: center;
-      padding: 10px 6px;
-      border-radius: 10px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-    }
-
-    .day-head.today {
-      border-color: var(--accent);
-      background: rgba(139, 92, 246, .12);
-    }
-
-    .day-name {
-      font-size: .78rem;
-      font-weight: 700;
-      color: var(--text);
-      text-transform: uppercase;
-      letter-spacing: .06em;
-    }
-
-    .day-date {
-      font-size: .68rem;
-      color: var(--muted);
-      margin-top: 2px;
-    }
-
-    .day-head.today .day-name {
-      color: var(--accent);
-    }
-
-
-    /* Slot cells */
-    .slot-cell {
-      background: var(--surface);
+      grid-template-columns: 90px repeat(10, minmax(78px, 1fr));
+      min-width: 880px;
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 10px;
-      min-height: 90px;
+      overflow: hidden;
+    }
+
+    /* Frozen name column */
+    .name-col-head,
+    .name-col-cell {
+      position: sticky;
+      left: 0;
+      z-index: 10;
+    }
+    .name-col-head {
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      min-height: 64px;
+    }
+    .name-col-cell {
       display: flex;
-      flex-direction: column;
-      gap: 6px;
-      transition: border-color .2s;
-      cursor: pointer;
-      position: relative;
-    }
-
-    .slot-cell:hover {
-      border-color: rgba(139, 92, 246, .45);
-    }
-
-    .slot-cell.has-me {
-      border-color: var(--accent);
-      background: rgba(139, 92, 246, .07);
-    }
-
-    .slot-cell.today-col {
-      background: rgba(139, 92, 246, .05);
-    }
-
-    /* Person chips */
-    .chips-wrap {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 5px;
-      flex: 1;
-    }
-
-    .chip {
-      display: inline-flex;
       align-items: center;
-      gap: 5px;
-      padding: 4px 8px 4px 5px;
-      border-radius: 20px;
-      font-size: .72rem;
+      gap: 7px;
+      padding: 7px 9px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      font-size: .74rem;
       font-weight: 600;
-      border: 1.5px solid transparent;
-      transition: opacity .15s;
-      max-width: 160px;
-      cursor: default;
+      min-height: 46px;
+      overflow: hidden;
     }
-
-    .chip.is-mine {
-      cursor: pointer;
-    }
-
-    .chip.is-mine:hover {
-      filter: brightness(1.15);
-    }
-
-    .chip-avatar {
-      width: 18px;
-      height: 18px;
+    .name-avatar {
+      width: 24px;
+      height: 24px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: .6rem;
+      font-size: .62rem;
       font-weight: 800;
       flex-shrink: 0;
-      color: #fff;
+      color: rgba(0,0,0,.6);
+    }
+    .name-label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
-    .chip-body {
+    /* Slot column headers */
+    .slot-head {
+      text-align: center;
+      padding: 6px 4px 5px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+    }
+    .slot-head.today-head {
+      background: rgba(139, 92, 246, .08);
+    }
+    .sh-day {
+      display: block;
+      font-size: .7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--text);
+      min-height: .9em;
+    }
+    .slot-head.today-head .sh-day { color: var(--accent); }
+    .sh-date {
+      display: block;
+      font-size: .57rem;
+      color: var(--muted);
+      min-height: .85em;
+    }
+    .sh-slot {
+      display: block;
+      font-size: .57rem;
+      color: var(--muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      margin-top: 1px;
+    }
+
+    /* Activity cells */
+    .act-cell {
+      padding: 5px 6px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      min-height: 46px;
       display: flex;
-      flex-direction: column;
-      gap: 1px;
-      min-width: 0;
+      align-items: center;
+      justify-content: center;
     }
+    .act-cell.today-col { background: rgba(139, 92, 246, .04); }
+    .act-cell.is-mine-empty {
+      cursor: pointer;
+      transition: background .12s;
+    }
+    .act-cell.is-mine-empty:hover { background: rgba(139, 92, 246, .09); }
 
-    .chip-name {
+    /* Activity pill */
+    .act-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border-radius: 14px;
+      font-size: .7rem;
+      font-weight: 700;
+      border: 1.5px solid transparent;
+      max-width: 100%;
       overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
     }
-
-    .chip-activity {
-      font-size: .6rem;
-      opacity: .75;
-      white-space: nowrap;
-    }
-
-    .chip-comment {
-      font-size: .6rem;
-      opacity: .6;
-      font-style: italic;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      max-width: 100px;
-    }
-
-    .chip-del {
+    .act-pill.is-mine { cursor: pointer; padding-right: 5px; }
+    .act-pill.is-mine:hover { filter: brightness(1.15); }
+    .pill-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pill-del {
       flex-shrink: 0;
       width: 14px;
       height: 14px;
@@ -478,17 +462,25 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: .6rem;
+      font-size: .65rem;
       cursor: pointer;
-      background: rgba(255, 255, 255, .15);
+      background: rgba(255,255,255,.15);
       color: inherit;
-      -webkit-tap-highlight-color: transparent;
       transition: background .15s;
       line-height: 1;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
     }
-
-    .chip-del:hover {
-      background: rgba(255, 80, 80, .4);
+    .pill-del:hover { background: rgba(255,80,80,.4); }
+    .pill-comment {
+      font-size: .57rem;
+      opacity: .7;
+      font-style: italic;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 88px;
+      text-align: center;
     }
 
     /* Activity picker popup */
@@ -828,36 +820,21 @@
       box-shadow: 0 4px 20px var(--glow);
     }
 
-    /* Add-me button inside cell */
-    .add-me-btn {
-      align-self: flex-end;
-      margin-top: auto;
-      padding: 4px 10px;
-      background: rgba(139, 92, 246, .12);
-      border: 1px dashed rgba(139, 92, 246, .35);
-      border-radius: 20px;
-      color: var(--accent);
-      font-size: .68rem;
-      font-weight: 600;
+    /* + button inside empty "my" cells */
+    .cell-add-btn {
+      font-size: 1.2rem;
+      color: rgba(139, 92, 246, .28);
+      background: none;
+      border: none;
       cursor: pointer;
-      font-family: inherit;
+      line-height: 1;
+      padding: 4px;
+      transition: color .15s, transform .15s;
       -webkit-tap-highlight-color: transparent;
-      transition: background .15s, border-color .15s;
     }
-
-    .add-me-btn:hover {
-      background: rgba(139, 92, 246, .22);
-      border-color: var(--accent);
-    }
-
-    .add-me-btn:disabled {
-      opacity: .3;
-      cursor: not-allowed;
-    }
-
-    /* Empty corner cell */
-    .corner {
-      background: transparent;
+    .cell-add-btn:hover {
+      color: var(--accent);
+      transform: scale(1.25);
     }
 
     /* ── Toast ── */
@@ -1152,9 +1129,10 @@
 
     const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
     const SLOTS = [
-      { key: 'morning', cls: 'morning' },
-      { key: 'afternoon', cls: 'afternoon' },
+      { key: 'morning', label: 'AM' },
+      { key: 'afternoon', label: 'PM' },
     ];
+    const MEMBERS = ['Cliff', 'Jonas', 'Markus', 'Patrick', 'Reto', 'Rolf', 'KnowJunior'];
     const DEFAULT_ACTIVITIES = [
       { id: 'kgb', label: 'KGB' },
       { id: 'frei', label: 'Frei' },
@@ -1510,8 +1488,8 @@
             if (lastSlot[myName] && !((weekData[fld] || {})[myName])) {
               const lastEntry = lastSlot[myName];
               updates[`${fld}.${myName}`] = {
-                activity: lastEntry.activity || 'office',
-                activityLabel: lastEntry.activityLabel || lastEntry.activity || 'Office',
+                activity: lastEntry.activity || 'kgb',
+                activityLabel: lastEntry.activityLabel || lastEntry.activity || 'KGB',
                 comment: ''
               };
             }
@@ -1521,7 +1499,6 @@
         try {
           await updateDoc(weekRef(), updates);
         } catch {
-          // Current week doc doesn't exist yet — create it
           await setDoc(weekRef(), Object.entries(updates).reduce((acc, [k, v]) => {
             const [fld, name] = k.split('.');
             acc[fld] = { ...(acc[fld] || {}), [name]: v };
@@ -1534,7 +1511,7 @@
     }
     $('copy-last-week').addEventListener('click', copyLastWeek);
 
-    // ── Render ────────────────────────────────────────────────────────
+    // ── Render ───────────────────────────────────────────────────────────
     function renderGrid() {
       const grid = $('cal-grid');
       grid.innerHTML = '';
@@ -1544,107 +1521,135 @@
       const mon = weekMonday(currentWeekKey);
       const isThisWeek = currentWeekKey === todayKey;
 
-      // Row 0: day headers (no corner cell)
+      // ── Header row: corner + 10 slot headers ──
+      const corner = document.createElement('div');
+      corner.className = 'name-col-head';
+      grid.appendChild(corner);
+
       for (let di = 0; di < 5; di++) {
         const dayIdx = di + 1;
         const d = new Date(mon); d.setUTCDate(mon.getUTCDate() + di);
-        const isToday = isThisWeek && (di + 1) === (todayDay || 7);
-        const head = document.createElement('div');
-        head.className = 'day-head' + (isToday ? ' today' : '');
-        head.innerHTML = `<div class="day-name">${DAYS[di]}</div><div class="day-date">${fmtDate(d)}</div>`;
-
-        // ── Gipfel badge ──
+        const isToday = isThisWeek && dayIdx === (todayDay || 7);
         const kgbCount = Object.values(weekData[`d${dayIdx}_morning`] || {})
           .filter(e => e.activity === 'kgb').length;
         const gipfelData = weekData[`gipfel_d${dayIdx}`];
-        if (gipfelData) {
-          // Already fulfilled — click to undo
-          const badge = document.createElement('div');
-          badge.className = 'gipfel-badge fulfilled';
-          badge.innerHTML = `Gipfelstand = ${gipfelData.count}<br>Danke ${gipfelData.by} 🙏`;
-          badge.title = 'Click to undo';
-          badge.addEventListener('click', async e => {
-            e.stopPropagation();
-            try { await updateDoc(weekRef(), { [`gipfel_d${dayIdx}`]: deleteField() }); }
-            catch (err) { console.error(err); showToast('⚠️ Could not undo'); }
-          });
-          head.appendChild(badge);
-        } else if (kgbCount > 0) {
-          // Required, not yet done
-          const badge = document.createElement('div');
-          badge.className = 'gipfel-badge required';
-          badge.textContent = `Gipfelrequirement = ${kgbCount}`;
-          badge.addEventListener('click', e => {
-            e.stopPropagation();
-            if (!myName) { showPrompt(); return; }
-            gipfelCtx = { dayIdx, count: kgbCount };
-            const pop = $('gipfel-pop');
-            const r = badge.getBoundingClientRect();
-            pop.style.top = (r.bottom + 6) + 'px';
-            pop.style.left = Math.max(8, r.left) + 'px';
-            pop.classList.toggle('open');
-          });
-          head.appendChild(badge);
-        }
 
-        grid.appendChild(head);
+        SLOTS.forEach((slot, si) => {
+          const head = document.createElement('div');
+          head.className = 'slot-head' + (isToday ? ' today-head' : '');
+          head.innerHTML =
+            `<span class="sh-day">${si === 0 ? DAYS[di] : ''}</span>` +
+            `<span class="sh-date">${si === 0 ? fmtDate(d) : ''}</span>` +
+            `<span class="sh-slot">${slot.label}</span>`;
+
+          // Gipfel badge: only on the AM (morning) header
+          if (si === 0) {
+            if (gipfelData) {
+              const badge = document.createElement('div');
+              badge.className = 'gipfel-badge fulfilled';
+              badge.innerHTML = `Gipfelstand = ${gipfelData.count}<br>Danke ${gipfelData.by} 🙏`;
+              badge.title = 'Click to undo';
+              badge.addEventListener('click', async e => {
+                e.stopPropagation();
+                try { await updateDoc(weekRef(), { [`gipfel_d${dayIdx}`]: deleteField() }); }
+                catch (err) { console.error(err); showToast('⚠️ Could not undo'); }
+              });
+              head.appendChild(badge);
+            } else if (kgbCount > 0) {
+              const badge = document.createElement('div');
+              badge.className = 'gipfel-badge required';
+              badge.textContent = `Gipfelrequirement = ${kgbCount}`;
+              badge.addEventListener('click', e => {
+                e.stopPropagation();
+                if (!myName) { showPrompt(); return; }
+                gipfelCtx = { dayIdx, count: kgbCount };
+                const pop = $('gipfel-pop');
+                const r = badge.getBoundingClientRect();
+                pop.style.top = (r.bottom + 6) + 'px';
+                pop.style.left = Math.max(8, r.left) + 'px';
+                pop.classList.toggle('open');
+              });
+              head.appendChild(badge);
+            }
+          }
+          grid.appendChild(head);
+        });
       }
 
-      // Rows 1-2: 5 cells per slot (no label column)
-      SLOTS.forEach(slot => {
+      // ── Person rows ──
+      MEMBERS.forEach(person => {
+        const c = nameColor(person);
+        const isMe = person === myName;
+
+        // Frozen name cell
+        const nameCell = document.createElement('div');
+        nameCell.className = 'name-col-cell';
+        nameCell.innerHTML =
+          `<div class="name-avatar" style="background:${c.bg}">${person[0].toUpperCase()}</div>` +
+          `<span class="name-label" style="color:${c.bg}">${person}</span>`;
+        grid.appendChild(nameCell);
+
+        // 5 days × 2 slots = 10 activity cells
         for (let di = 0; di < 5; di++) {
           const dayIdx = di + 1;
-          const field = `d${dayIdx}_${slot.key}`;
-          const slotMap = weekData[field] || {};      // { Cliff:{activity,comment}, ... }
-          const isMeHere = myName && myName in slotMap;
           const isToday = isThisWeek && dayIdx === (todayDay || 7);
+          SLOTS.forEach(slot => {
+            const slotMap = weekData[`d${dayIdx}_${slot.key}`] || {};
+            const entry = slotMap[person];
+            const cell = document.createElement('div');
 
-          const cell = document.createElement('div');
-          cell.className = 'slot-cell' + (isMeHere ? ' has-me' : '') + (isToday ? ' today-col' : '');
+            if (entry) {
+              const defaultAct = DEFAULT_ACTIVITIES.find(a => a.id === entry.activity);
+              const actLabel = entry.activityLabel || (defaultAct ? defaultAct.label : entry.activity) || '?';
+              cell.className = 'act-cell' + (isToday ? ' today-col' : '');
 
-          // Chips
-          const wrap = document.createElement('div');
-          wrap.className = 'chips-wrap';
-          Object.entries(slotMap).forEach(([name, entry]) => {
-            const c = nameColor(name);
-            // Use the label stored in the entry itself — viewer-independent
-            // Fall back to DEFAULT_ACTIVITIES lookup so raw IDs are never shown
-            const defaultAct = DEFAULT_ACTIVITIES.find(a => a.id === entry.activity);
-            const actLabel = entry.activityLabel || (defaultAct ? defaultAct.label : entry.activity) || '?';
-            const isMe = name === myName;
-            const chip = document.createElement('div');
-            chip.className = 'chip' + (isMe ? ' is-mine' : '');
-            chip.style.cssText = `background:${c.bg}22;border-color:${c.bg}66;color:${c.bg}`;
-            chip.innerHTML =
-              `<div class="chip-avatar" style="background:${c.bg}">${name[0].toUpperCase()}</div>` +
-              `<div class="chip-body">` +
-              `<span class="chip-name">${name}</span>` +
-              `<span class="chip-activity">${actLabel}</span>` +
-              (entry.comment ? `<span class="chip-comment">${entry.comment}</span>` : '') +
-              `</div>` +
-              (isMe ? `<button class="chip-del" title="Remove me">x</button>` : '');
-            if (isMe) {
-              chip.querySelector('.chip-del').addEventListener('click', e => { e.stopPropagation(); removeEntry(dayIdx, slot.key, name); });
-              chip.addEventListener('click', e => { e.stopPropagation(); showCommentModal(dayIdx, slot.key); });
+              const pill = document.createElement('div');
+              pill.className = 'act-pill' + (isMe ? ' is-mine' : '');
+              pill.style.cssText = `background:${c.bg}22;border-color:${c.bg}66;color:${c.bg}`;
+              pill.innerHTML = `<span class="pill-label">${actLabel}</span>` +
+                (isMe ? `<button class="pill-del" title="Remove">×</button>` : '');
+
+              if (isMe) {
+                pill.querySelector('.pill-del').addEventListener('click', e => {
+                  e.stopPropagation();
+                  removeEntry(dayIdx, slot.key, person);
+                });
+                pill.addEventListener('click', e => {
+                  if (!e.target.classList.contains('pill-del')) {
+                    e.stopPropagation();
+                    showCommentModal(dayIdx, slot.key);
+                  }
+                });
+              }
+
+              const wrap = document.createElement('div');
+              wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:2px;width:100%';
+              wrap.appendChild(pill);
+              if (entry.comment) {
+                const cmt = document.createElement('div');
+                cmt.className = 'pill-comment';
+                cmt.textContent = entry.comment;
+                cmt.style.color = c.bg;
+                wrap.appendChild(cmt);
+              }
+              cell.appendChild(wrap);
+
+            } else {
+              cell.className = 'act-cell' + (isToday ? ' today-col' : '') + (isMe ? ' is-mine-empty' : '');
+              if (isMe) {
+                const addBtn = document.createElement('button');
+                addBtn.className = 'cell-add-btn';
+                addBtn.textContent = '+';
+                addBtn.title = 'Add activity';
+                addBtn.addEventListener('click', e => {
+                  e.stopPropagation();
+                  showActivityPicker(addBtn, dayIdx, slot.key);
+                });
+                cell.appendChild(addBtn);
+              }
             }
-            wrap.appendChild(chip);
+            grid.appendChild(cell);
           });
-          cell.appendChild(wrap);
-
-          // Add-me / I'm here button
-          const btn = document.createElement('button');
-          btn.className = 'add-me-btn';
-          btn.disabled = !myName;
-          if (isMeHere) {
-            btn.textContent = 'Remove me';
-            btn.style.cssText = 'border-style:solid;color:#a78bfa;border-color:#a78bfa66;background:rgba(139,92,246,.15)';
-            btn.addEventListener('click', e => { e.stopPropagation(); removeEntry(dayIdx, slot.key, myName); });
-          } else {
-            btn.textContent = '+ Add me';
-            btn.addEventListener('click', e => { e.stopPropagation(); showActivityPicker(btn, dayIdx, slot.key); });
-          }
-          cell.appendChild(btn);
-          grid.appendChild(cell);
         }
       });
     }
