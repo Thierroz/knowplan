@@ -328,11 +328,11 @@
       border-radius: 4px;
     }
 
-    /* ── Calendar grid: name column + 10 slot columns ── */
+    /* ── Calendar grid: name column + 5 day columns ── */
     .cal-grid {
       display: grid;
-      grid-template-columns: 90px repeat(10, minmax(78px, 1fr));
-      min-width: 880px;
+      grid-template-columns: auto repeat(5, minmax(90px, 1fr));
+      min-width: 580px;
       border: 1px solid var(--border);
       border-radius: var(--radius);
       overflow: hidden;
@@ -340,7 +340,8 @@
 
     /* Frozen name column */
     .name-col-head,
-    .name-col-cell {
+    .name-col-am,
+    .name-col-pm {
       position: sticky;
       left: 0;
       z-index: 10;
@@ -349,20 +350,31 @@
       background: var(--surface2);
       border-bottom: 1px solid var(--border);
       border-right: 1px solid var(--border);
-      min-height: 64px;
+      min-height: 56px;
     }
-    .name-col-cell {
+    .name-col-am {
       display: flex;
       align-items: center;
-      gap: 7px;
-      padding: 7px 9px;
+      gap: 8px;
+      padding: 7px 12px 4px 10px;
       background: var(--surface);
-      border-bottom: 1px solid var(--border);
       border-right: 1px solid var(--border);
-      font-size: .74rem;
+      border-top: 1px solid var(--border);
+      font-size: .8rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .name-col-pm {
+      display: flex;
+      align-items: center;
+      padding: 4px 12px 7px 42px; /* indent past avatar */
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      font-size: .65rem;
       font-weight: 600;
-      min-height: 46px;
-      overflow: hidden;
+      color: var(--muted);
+      white-space: nowrap;
     }
     .name-avatar {
       width: 24px;
@@ -376,46 +388,39 @@
       flex-shrink: 0;
       color: rgba(0,0,0,.6);
     }
-    .name-label {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+    .slot-label {
+      font-size: .58rem;
+      font-weight: 700;
+      opacity: .55;
+      margin-left: auto;
+      text-transform: uppercase;
+      letter-spacing: .04em;
     }
 
-    /* Slot column headers */
-    .slot-head {
+    /* Day column headers */
+    .day-col-head {
       text-align: center;
-      padding: 6px 4px 5px;
+      padding: 8px 6px;
       background: var(--surface2);
       border-bottom: 1px solid var(--border);
       border-right: 1px solid var(--border);
     }
-    .slot-head.today-head {
+    .day-col-head.today-head {
       background: rgba(139, 92, 246, .08);
     }
-    .sh-day {
+    .dch-name {
       display: block;
-      font-size: .7rem;
+      font-size: .72rem;
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: .05em;
       color: var(--text);
-      min-height: .9em;
     }
-    .slot-head.today-head .sh-day { color: var(--accent); }
-    .sh-date {
+    .day-col-head.today-head .dch-name { color: var(--accent); }
+    .dch-date {
       display: block;
-      font-size: .57rem;
+      font-size: .6rem;
       color: var(--muted);
-      min-height: .85em;
-    }
-    .sh-slot {
-      display: block;
-      font-size: .57rem;
-      color: var(--muted);
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .04em;
       margin-top: 1px;
     }
 
@@ -423,13 +428,14 @@
     .act-cell {
       padding: 5px 6px;
       background: var(--surface);
-      border-bottom: 1px solid var(--border);
       border-right: 1px solid var(--border);
-      min-height: 46px;
+      min-height: 34px;
       display: flex;
       align-items: center;
       justify-content: center;
     }
+    .act-cell.am-row { border-top: 1px solid var(--border); }
+    .act-cell.pm-row { border-bottom: 1px solid var(--border); }
     .act-cell.today-col { background: rgba(139, 92, 246, .04); }
     .act-cell.is-mine-empty {
       cursor: pointer;
@@ -1521,7 +1527,7 @@
       const mon = weekMonday(currentWeekKey);
       const isThisWeek = currentWeekKey === todayKey;
 
-      // ── Header row: corner + 10 slot headers ──
+      // ── Header row: corner + 5 day headers ──
       const corner = document.createElement('div');
       corner.className = 'name-col-head';
       grid.appendChild(corner);
@@ -1534,74 +1540,75 @@
           .filter(e => e.activity === 'kgb').length;
         const gipfelData = weekData[`gipfel_d${dayIdx}`];
 
-        SLOTS.forEach((slot, si) => {
-          const head = document.createElement('div');
-          head.className = 'slot-head' + (isToday ? ' today-head' : '');
-          head.innerHTML =
-            `<span class="sh-day">${si === 0 ? DAYS[di] : ''}</span>` +
-            `<span class="sh-date">${si === 0 ? fmtDate(d) : ''}</span>` +
-            `<span class="sh-slot">${slot.label}</span>`;
+        const head = document.createElement('div');
+        head.className = 'day-col-head' + (isToday ? ' today-head' : '');
+        head.innerHTML =
+          `<span class="dch-name">${DAYS[di]}</span>` +
+          `<span class="dch-date">${fmtDate(d)}</span>`;
 
-          // Gipfel badge: only on the AM (morning) header
-          if (si === 0) {
-            if (gipfelData) {
-              const badge = document.createElement('div');
-              badge.className = 'gipfel-badge fulfilled';
-              badge.innerHTML = `Gipfelstand = ${gipfelData.count}<br>Danke ${gipfelData.by} 🙏`;
-              badge.title = 'Click to undo';
-              badge.addEventListener('click', async e => {
-                e.stopPropagation();
-                try { await updateDoc(weekRef(), { [`gipfel_d${dayIdx}`]: deleteField() }); }
-                catch (err) { console.error(err); showToast('⚠️ Could not undo'); }
-              });
-              head.appendChild(badge);
-            } else if (kgbCount > 0) {
-              const badge = document.createElement('div');
-              badge.className = 'gipfel-badge required';
-              badge.textContent = `Gipfelrequirement = ${kgbCount}`;
-              badge.addEventListener('click', e => {
-                e.stopPropagation();
-                if (!myName) { showPrompt(); return; }
-                gipfelCtx = { dayIdx, count: kgbCount };
-                const pop = $('gipfel-pop');
-                const r = badge.getBoundingClientRect();
-                pop.style.top = (r.bottom + 6) + 'px';
-                pop.style.left = Math.max(8, r.left) + 'px';
-                pop.classList.toggle('open');
-              });
-              head.appendChild(badge);
-            }
-          }
-          grid.appendChild(head);
-        });
+        if (gipfelData) {
+          const badge = document.createElement('div');
+          badge.className = 'gipfel-badge fulfilled';
+          badge.innerHTML = `Gipfelstand = ${gipfelData.count}<br>Danke ${gipfelData.by} 🙏`;
+          badge.title = 'Click to undo';
+          badge.addEventListener('click', async e => {
+            e.stopPropagation();
+            try { await updateDoc(weekRef(), { [`gipfel_d${dayIdx}`]: deleteField() }); }
+            catch (err) { console.error(err); showToast('⚠️ Could not undo'); }
+          });
+          head.appendChild(badge);
+        } else if (kgbCount > 0) {
+          const badge = document.createElement('div');
+          badge.className = 'gipfel-badge required';
+          badge.textContent = `Gipfelrequirement = ${kgbCount}`;
+          badge.addEventListener('click', e => {
+            e.stopPropagation();
+            if (!myName) { showPrompt(); return; }
+            gipfelCtx = { dayIdx, count: kgbCount };
+            const pop = $('gipfel-pop');
+            const r = badge.getBoundingClientRect();
+            pop.style.top = (r.bottom + 6) + 'px';
+            pop.style.left = Math.max(8, r.left) + 'px';
+            pop.classList.toggle('open');
+          });
+          head.appendChild(badge);
+        }
+        grid.appendChild(head);
       }
 
-      // ── Person rows ──
+      // ── Person rows: 2 grid-rows per person (AM + PM) ──
       MEMBERS.forEach(person => {
         const c = nameColor(person);
         const isMe = person === myName;
 
-        // Frozen name cell
-        const nameCell = document.createElement('div');
-        nameCell.className = 'name-col-cell';
-        nameCell.innerHTML =
-          `<div class="name-avatar" style="background:${c.bg}">${person[0].toUpperCase()}</div>` +
-          `<span class="name-label" style="color:${c.bg}">${person}</span>`;
-        grid.appendChild(nameCell);
+        SLOTS.forEach((slot, si) => {
+          // Name cell
+          const nameCell = document.createElement('div');
+          if (si === 0) {
+            nameCell.className = 'name-col-am';
+            nameCell.innerHTML =
+              `<div class="name-avatar" style="background:${c.bg}">${person[0].toUpperCase()}</div>` +
+              `<span style="color:${c.bg}">${person}</span>` +
+              `<span class="slot-label">AM</span>`;
+          } else {
+            nameCell.className = 'name-col-pm';
+            nameCell.innerHTML = `<span>PM</span>`;
+          }
+          grid.appendChild(nameCell);
 
-        // 5 days × 2 slots = 10 activity cells
-        for (let di = 0; di < 5; di++) {
-          const dayIdx = di + 1;
-          const isToday = isThisWeek && dayIdx === (todayDay || 7);
-          SLOTS.forEach(slot => {
+          // 5 activity cells for this slot row
+          for (let di = 0; di < 5; di++) {
+            const dayIdx = di + 1;
+            const isToday = isThisWeek && dayIdx === (todayDay || 7);
             const slotMap = weekData[`d${dayIdx}_${slot.key}`] || {};
             const entry = slotMap[person];
+            const rowCls = si === 0 ? ' am-row' : ' pm-row';
             const cell = document.createElement('div');
 
             if (entry) {
               const defaultAct = DEFAULT_ACTIVITIES.find(a => a.id === entry.activity);
               const actLabel = entry.activityLabel || (defaultAct ? defaultAct.label : entry.activity) || '?';
-              cell.className = 'act-cell' + (isToday ? ' today-col' : '');
+              cell.className = 'act-cell' + rowCls + (isToday ? ' today-col' : '');
 
               const pill = document.createElement('div');
               pill.className = 'act-pill' + (isMe ? ' is-mine' : '');
@@ -1635,7 +1642,7 @@
               cell.appendChild(wrap);
 
             } else {
-              cell.className = 'act-cell' + (isToday ? ' today-col' : '') + (isMe ? ' is-mine-empty' : '');
+              cell.className = 'act-cell' + rowCls + (isToday ? ' today-col' : '') + (isMe ? ' is-mine-empty' : '');
               if (isMe) {
                 const addBtn = document.createElement('button');
                 addBtn.className = 'cell-add-btn';
@@ -1649,8 +1656,8 @@
               }
             }
             grid.appendChild(cell);
-          });
-        }
+          }
+        });
       });
     }
 
