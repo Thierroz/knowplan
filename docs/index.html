@@ -555,13 +555,20 @@ function nameColor(name) {
 let currentWeekKey = getWeekKey();
 let weekData      = {};   // { "d1_morning": { Cliff:{activity,comment}, ... }, ... }
 let myName        = localStorage.getItem('knowplan_name') || '';
-let userActivities = [...DEFAULT_ACTIVITIES];  // loaded from Firestore per user
+let userActivities = [...DEFAULT_ACTIVITIES];  // active user's list
+let activityCache  = {};  // { "KnowJunior": [...], "Reto": [...] } — in-session cache
 let unsubscribe   = null;
 
 // ── User activities (per-user Firestore) ─────────────────────────
 function userRef(name) { return doc(db, 'users', name); }
 
 async function loadUserActivities() {
+  // 1. Use in-session cache if available (avoids stale Firestore reads)
+  if (activityCache[myName]) {
+    userActivities = activityCache[myName];
+    return;
+  }
+  // 2. Otherwise fetch from Firestore
   try {
     const snap = await getDoc(userRef(myName));
     if (snap.exists() && Array.isArray(snap.data().activities) && snap.data().activities.length) {
@@ -570,11 +577,14 @@ async function loadUserActivities() {
       userActivities = [...DEFAULT_ACTIVITIES];
     }
   } catch { userActivities = [...DEFAULT_ACTIVITIES]; }
+  // Populate cache for next switch
+  activityCache[myName] = userActivities;
 }
 
 async function saveUserActivities() {
   try {
     await setDoc(userRef(myName), { activities: userActivities }, { merge: true });
+    activityCache[myName] = userActivities;  // keep cache in sync
     return true;
   } catch (e) {
     console.error(e);
@@ -620,16 +630,20 @@ $('act-new-label').addEventListener('keydown', e => { if (e.key === 'Enter') $('
 $('act-cancel').addEventListener('click', () => $('act-modal').classList.remove('open'));
 $('act-save').addEventListener('click', async () => {
   if (!actDraft.length) { showToast('Add at least one activity'); return; }
-  // Write to Firestore first; only update in-memory state on success
+  const saveBtn = $('act-save');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Saving...';
   const prev = userActivities;
   userActivities = actDraft;
   const ok = await saveUserActivities();
+  saveBtn.disabled = false;
+  saveBtn.textContent = 'Save';
   if (ok) {
     $('act-modal').classList.remove('open');
     showToast('Activities saved');
-    renderGrid();   // refresh chips so labels update immediately
+    renderGrid();
   } else {
-    userActivities = prev;  // revert if save failed
+    userActivities = prev;
   }
 });
 $('picker-configure').addEventListener('click', openActModal);
@@ -701,7 +715,7 @@ function showActivityPicker(anchorEl, dayIdx, slotKey) {
     btn.textContent = act.label;
     btn.addEventListener('click', async () => {
       closePicker();
-      await addEntry(dayIdx, slotKey, act.id);
+      await addEntry(dayIdx, slotKey, act);
     });
     picker.insertBefore(btn, footer);
   });
@@ -741,13 +755,14 @@ $('comment-save').addEventListener('click', async () => {
 });
 
 // ── Firestore helpers ────────────────────────────────────────────
-async function addEntry(dayIdx, slotKey, activity) {
+async function addEntry(dayIdx, slotKey, act) {
   if (!myName) { showPrompt(); return; }
-  const field = `d${dayIdx}_${slotKey}.${myName}`;
+  const field    = `d${dayIdx}_${slotKey}.${myName}`;
   const existing = ((weekData[`d${dayIdx}_${slotKey}`] || {})[myName]);
-  const comment = existing ? (existing.comment || '') : '';
-  try { await updateDoc(weekRef(), { [field]: { activity, comment } }); }
-  catch { try { await setDoc(weekRef(), { [`d${dayIdx}_${slotKey}`]: { [myName]: { activity, comment } } }, { merge: true }); } catch (e) { console.error(e); showToast('⚠️ Save failed'); } }
+  const comment  = existing ? (existing.comment || '') : '';
+  const entry    = { activity: act.id, activityLabel: act.label, comment };
+  try { await updateDoc(weekRef(), { [field]: entry }); }
+  catch { try { await setDoc(weekRef(), { [`d${dayIdx}_${slotKey}`]: { [myName]: entry } }, { merge: true }); } catch (e) { console.error(e); showToast('Save failed'); } }
 }
 async function removeEntry(dayIdx, slotKey, name) {
   const field = `d${dayIdx}_${slotKey}.${name}`;
@@ -820,7 +835,8 @@ function renderGrid() {
       wrap.className = 'chips-wrap';
       Object.entries(slotMap).forEach(([name, entry]) => {
         const c    = nameColor(name);
-        const act  = userActivities.find(a => a.id === (entry.activity || '')) || userActivities[0] || { label: entry.activity || '?' };
+        // Use the label stored in the entry itself — viewer-independent
+        const actLabel = entry.activityLabel || entry.activity || '?';
         const isMe = name === myName;
         const chip = document.createElement('div');
         chip.className = 'chip' + (isMe ? ' is-mine' : '');
@@ -829,7 +845,7 @@ function renderGrid() {
           `<div class="chip-avatar" style="background:${c.bg}">${name[0].toUpperCase()}</div>` +
           `<div class="chip-body">` +
             `<span class="chip-name">${name}</span>` +
-            `<span class="chip-activity">${act.label}</span>` +
+            `<span class="chip-activity">${actLabel}</span>` +
             (entry.comment ? `<span class="chip-comment">${entry.comment}</span>` : '') +
           `</div>` +
           (isMe ? `<button class="chip-del" title="Remove me">x</button>` : '');
