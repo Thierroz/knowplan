@@ -1092,6 +1092,10 @@
         localStorage.setItem('knowplan_name', myName);
         $('my-name').value = myName;
         $('name-prompt').classList.remove('visible');
+        // Reset immediately so the picker never shows the previous user's
+        // activities during the async Firestore fetch
+        userActivities = [...DEFAULT_ACTIVITIES];
+        closePicker();
         loadUserActivities().then(() => renderGrid());
       }
     }
