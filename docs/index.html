@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0c0a1e" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="KnowPlan" />
+  <meta name="description" content="Shared weekly morning & afternoon availability calendar." />
+  <title>KnowPlan</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-512.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0c0a1e;
+      --surface:  #161232;
+      --surface2: #201a44;
+      --border:   rgba(139,92,246,.2);
+      --accent:   #8b5cf6;
+      --accent2:  #6d28d9;
+      --glow:     rgba(139,92,246,.3);
+      --text:     #ede9fe;
+      --muted:    #7c6fa8;
+      --radius:   14px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bot: env(safe-area-inset-bottom, 0px);
+    }
+
+    html, body {
+      min-height: 100dvh;
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: -1;
+      background:
+        radial-gradient(ellipse 70% 50% at 15% -5%, rgba(139,92,246,.18) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 85% 110%, rgba(109,40,217,.2) 0%, transparent 60%),
+        var(--bg);
+    }
+
+    /* ── Header ── */
+    #header {
+      position: sticky; top: 0; z-index: 100;
+      padding: calc(var(--safe-top) + 14px) 20px 14px;
+      background: rgba(12,10,30,.92);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 12px;
+    }
+    .logo-wrap { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .logo-img { width: 30px; height: 30px; filter: drop-shadow(0 0 8px var(--glow)); animation: float 3.5s ease-in-out infinite; }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+    #app-title {
+      font-size: 1.25rem; font-weight: 800;
+      background: linear-gradient(135deg, #a78bfa, #7c3aed);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+
+    /* Week nav */
+    #week-nav { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+    .week-btn {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); font-size: 1rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .15s, border-color .15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .week-btn:active { background: var(--accent); border-color: var(--accent); }
+    #week-label {
+      font-size: .78rem; font-weight: 600; color: var(--muted);
+      text-align: center; min-width: 130px; line-height: 1.3;
+    }
+    #week-label span { display: block; font-size: .65rem; color: var(--accent); font-weight: 500; }
+
+    /* ── Name bar ── */
+    #name-bar {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 20px;
+      background: rgba(22,18,50,.8);
+      border-bottom: 1px solid var(--border);
+    }
+    #name-bar label { font-size: .78rem; color: var(--muted); white-space: nowrap; font-weight: 500; }
+    #my-name {
+      flex: 1; max-width: 220px;
+      padding: 8px 12px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; color: var(--text);
+      font-size: .9rem; font-family: inherit; outline: none;
+      transition: border-color .2s;
+    }
+    #my-name::placeholder { color: var(--muted); }
+    #my-name:focus { border-color: var(--accent); }
+    .name-hint { font-size: .7rem; color: var(--muted); }
+
+    /* ── Main ── */
+    main { padding: 16px 16px calc(var(--safe-bot) + 24px); }
+
+    /* ── Grid scroll wrapper ── */
+    .grid-scroll {
+      overflow-x: auto; -webkit-overflow-scrolling: touch;
+      border-radius: var(--radius);
+      padding-bottom: 4px;
+    }
+    .grid-scroll::-webkit-scrollbar { height: 4px; }
+    .grid-scroll::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 4px; }
+
+    /* ── Calendar grid ── */
+    .cal-grid {
+      display: grid;
+      grid-template-columns: 88px repeat(5, minmax(150px, 1fr));
+      gap: 6px;
+      min-width: 840px;
+    }
+
+    /* Day header cells */
+    .day-head {
+      text-align: center; padding: 10px 6px;
+      border-radius: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+    }
+    .day-head.today { border-color: var(--accent); background: rgba(139,92,246,.12); }
+    .day-name { font-size: .78rem; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: .06em; }
+    .day-date { font-size: .68rem; color: var(--muted); margin-top: 2px; }
+    .day-head.today .day-name { color: var(--accent); }
+
+    /* Slot label cells */
+    .slot-label {
+      position: sticky; left: 0; z-index: 5;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 4px; padding: 12px 6px;
+      background: var(--bg);
+      border-radius: 10px;
+      font-size: .7rem; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .07em;
+    }
+    .slot-label::before { font-size: 1.2rem; }
+    .slot-label.morning::before { content: '🌅'; }
+    .slot-label.afternoon::before { content: '🌆'; }
+
+    /* Slot cells */
+    .slot-cell {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px;
+      min-height: 90px;
+      display: flex; flex-direction: column; gap: 6px;
+      transition: border-color .2s;
+      cursor: pointer;
+      position: relative;
+    }
+    .slot-cell:hover { border-color: rgba(139,92,246,.45); }
+    .slot-cell.has-me { border-color: var(--accent); background: rgba(139,92,246,.07); }
+    .slot-cell.today-col { background: rgba(139,92,246,.05); }
+
+    /* Person chips */
+    .chips-wrap { display: flex; flex-wrap: wrap; gap: 5px; flex: 1; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 8px 4px 5px;
+      border-radius: 20px;
+      font-size: .72rem; font-weight: 600;
+      border: 1.5px solid transparent;
+      transition: opacity .15s;
+      max-width: 130px;
+    }
+    .chip-avatar {
+      width: 18px; height: 18px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .6rem; font-weight: 800; flex-shrink: 0;
+      color: #fff;
+    }
+    .chip-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .chip-del {
+      flex-shrink: 0; width: 14px; height: 14px;
+      border-radius: 50%; border: none;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .6rem; cursor: pointer;
+      background: rgba(255,255,255,.15); color: inherit;
+      -webkit-tap-highlight-color: transparent;
+      transition: background .15s;
+      line-height: 1;
+    }
+    .chip-del:hover { background: rgba(255,80,80,.4); }
+
+    /* Add-me button inside cell */
+    .add-me-btn {
+      align-self: flex-end;
+      margin-top: auto;
+      padding: 4px 10px;
+      background: rgba(139,92,246,.12);
+      border: 1px dashed rgba(139,92,246,.35);
+      border-radius: 20px;
+      color: var(--accent);
+      font-size: .68rem; font-weight: 600;
+      cursor: pointer; font-family: inherit;
+      -webkit-tap-highlight-color: transparent;
+      transition: background .15s, border-color .15s;
+    }
+    .add-me-btn:hover { background: rgba(139,92,246,.22); border-color: var(--accent); }
+    .add-me-btn:disabled { opacity: .3; cursor: not-allowed; }
+
+    /* Empty corner cell */
+    .corner { background: transparent; }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed; bottom: calc(var(--safe-bot) + 20px); left: 50%;
+      transform: translateX(-50%) translateY(60px);
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 40px; padding: 11px 22px;
+      font-size: .85rem; font-weight: 500;
+      opacity: 0; pointer-events: none; white-space: nowrap;
+      transition: transform .3s cubic-bezier(.34,1.56,.64,1), opacity .3s;
+      box-shadow: 0 8px 30px rgba(0,0,0,.5); z-index: 9999;
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+    /* ── No-name overlay hint ── */
+    #name-prompt {
+      display: none;
+      position: fixed; inset: 0; z-index: 500;
+      background: rgba(12,10,30,.85); backdrop-filter: blur(8px);
+      align-items: center; justify-content: center; padding: 24px;
+    }
+    #name-prompt.visible { display: flex; }
+    .prompt-card {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 20px; padding: 28px 24px; text-align: center;
+      max-width: 340px; width: 100%;
+      box-shadow: 0 24px 60px rgba(0,0,0,.5);
+    }
+    .prompt-card h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: 6px; }
+    .prompt-card p { font-size: .82rem; color: var(--muted); margin-bottom: 18px; }
+    #prompt-input {
+      width: 100%; padding: 13px; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 12px;
+      color: var(--text); font-size: 1rem; font-family: inherit;
+      outline: none; margin-bottom: 12px; transition: border-color .2s;
+    }
+    #prompt-input:focus { border-color: var(--accent); }
+    #prompt-submit {
+      width: 100%; padding: 14px;
+      background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+      border: none; border-radius: 12px; color: #fff;
+      font-size: 1rem; font-weight: 700; cursor: pointer; font-family: inherit;
+      box-shadow: 0 4px 20px var(--glow);
+      transition: opacity .2s;
+    }
+    #prompt-submit:active { opacity: .85; }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div id="header">
+    <div class="logo-wrap">
+      <img class="logo-img" src="icon-512.png" alt="" />
+      <span id="app-title">KnowPlan</span>
+    </div>
+    <div id="week-nav">
+      <button class="week-btn" id="prev-week">‹</button>
+      <div id="week-label">Loading…<span id="week-tag"></span></div>
+      <button class="week-btn" id="next-week">›</button>
+    </div>
+  </div>
+
+  <!-- Name bar -->
+  <div id="name-bar">
+    <label for="my-name">👤 You:</label>
+    <input id="my-name" type="text" placeholder="Enter your name…" autocomplete="off" maxlength="30" />
+    <span class="name-hint">Tap any slot to add yourself</span>
+  </div>
+
+  <!-- Calendar -->
+  <main>
+    <div class="grid-scroll">
+      <div class="cal-grid" id="cal-grid">
+        <!-- Built by JS -->
+      </div>
+    </div>
+  </main>
+
+  <!-- Name prompt overlay -->
+  <div id="name-prompt">
+    <div class="prompt-card">
+      <h2>👋 Welcome to KnowPlan</h2>
+      <p>Enter your name to start adding yourself to the shared calendar.</p>
+      <input id="prompt-input" type="text" placeholder="Your name…" maxlength="30" autocomplete="off" />
+      <button id="prompt-submit">Let's go →</button>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+<script type="module">
+import { initializeApp }  from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js';
+import { getFirestore, doc, setDoc, updateDoc, onSnapshot,
+         arrayUnion, arrayRemove, getDoc }
+  from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js';
+
+// ── Firebase config ─────────────────────────────────────────────
+// TODO: Replace with your own Firebase project config
+// 1. Go to https://console.firebase.google.com
+// 2. Create a project named "knowplan"
+// 3. Add a Web app, copy the config here
+// 4. Enable Firestore Database in test mode
+const fbApp = initializeApp({
+  apiKey:            "REPLACE_ME",
+  authDomain:        "REPLACE_ME",
+  projectId:         "REPLACE_ME",
+  storageBucket:     "REPLACE_ME",
+  messagingSenderId: "REPLACE_ME",
+  appId:             "REPLACE_ME"
+});
+const db = getFirestore(fbApp);
+
+// ── Helpers ──────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+
+function showToast(msg, ms = 2600) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), ms);
+}
+
+/** ISO week key: "2026-W18" */
+function getWeekKey(date = new Date()) {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const wn = Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+  return `${d.getUTCFullYear()}-W${String(wn).padStart(2, '0')}`;
+}
+
+/** Returns the Monday Date for a given week key */
+function weekMonday(weekKey) {
+  const [yr, wPart] = weekKey.split('-W');
+  const week = parseInt(wPart);
+  const jan4 = new Date(Date.UTC(+yr, 0, 4));
+  const jan4dow = jan4.getUTCDay() || 7;
+  const mon = new Date(jan4);
+  mon.setUTCDate(jan4.getUTCDate() - jan4dow + 1 + (week - 1) * 7);
+  return mon;
+}
+
+/** Navigate week key by ±1 */
+function offsetWeek(weekKey, delta) {
+  const mon = weekMonday(weekKey);
+  mon.setUTCDate(mon.getUTCDate() + delta * 7);
+  return getWeekKey(mon);
+}
+
+const DAYS  = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+const SLOTS = [
+  { key: 'morning',   label: 'Morning',   cls: 'morning' },
+  { key: 'afternoon', label: 'Afternoon', cls: 'afternoon' },
+];
+
+const SHORT_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function fmtDate(d) { return `${d.getUTCDate()} ${SHORT_MONTHS[d.getUTCMonth()]}`; }
+
+/** Consistent color from a name string */
+function nameColor(name) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffffffff;
+  const hue = Math.abs(h) % 360;
+  return { bg: `hsl(${hue},65%,52%)`, fg: `hsl(${hue},65%,22%)` };
+}
+
+// ── State ────────────────────────────────────────────────────────
+let currentWeekKey = getWeekKey();
+let weekData = {};          // { "d1_morning": ["Alice", "Bob"], ... }
+let myName   = localStorage.getItem('knowplan_name') || '';
+let unsubscribe = null;
+
+// ── Name handling ────────────────────────────────────────────────
+function applyName(name) {
+  myName = name.trim();
+  if (myName) {
+    localStorage.setItem('knowplan_name', myName);
+    $('my-name').value = myName;
+    $('name-prompt').classList.remove('visible');
+    renderGrid();
+  }
+}
+
+$('my-name').addEventListener('change', () => applyName($('my-name').value));
+$('my-name').addEventListener('blur',   () => applyName($('my-name').value));
+
+$('prompt-submit').addEventListener('click', () => applyName($('prompt-input').value));
+$('prompt-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') applyName($('prompt-input').value);
+});
+
+// ── Week navigation ──────────────────────────────────────────────
+function updateWeekLabel() {
+  const mon = weekMonday(currentWeekKey);
+  const fri = new Date(mon); fri.setUTCDate(mon.getUTCDate() + 4);
+  $('week-label').childNodes[0].textContent = `${fmtDate(mon)} – ${fmtDate(fri)} ${fri.getUTCFullYear()}`;
+  const thisWeek = getWeekKey();
+  $('week-tag').textContent = currentWeekKey === thisWeek ? 'This week' : currentWeekKey;
+}
+
+$('prev-week').addEventListener('click', () => {
+  currentWeekKey = offsetWeek(currentWeekKey, -1);
+  subscribeWeek();
+});
+$('next-week').addEventListener('click', () => {
+  currentWeekKey = offsetWeek(currentWeekKey, +1);
+  subscribeWeek();
+});
+
+// ── Firestore ────────────────────────────────────────────────────
+function weekRef() { return doc(db, 'weeks', currentWeekKey); }
+
+function subscribeWeek() {
+  if (unsubscribe) unsubscribe();
+  weekData = {};
+  renderGrid();
+  updateWeekLabel();
+  unsubscribe = onSnapshot(weekRef(), snap => {
+    weekData = snap.exists() ? snap.data() : {};
+    renderGrid();
+  }, err => {
+    console.error(err);
+    showToast('⚠️ Could not load — check Firebase config');
+  });
+}
+
+async function addName(dayIdx, slotKey) {
+  if (!myName) { showPrompt(); return; }
+  const field = `d${dayIdx}_${slotKey}`;
+  const names  = weekData[field] || [];
+  if (names.includes(myName)) return;           // already there
+  try {
+    await setDoc(weekRef(), { [field]: arrayUnion(myName) }, { merge: true });
+  } catch (e) { console.error(e); showToast('⚠️ Save failed'); }
+}
+
+async function removeName(dayIdx, slotKey, name) {
+  const field = `d${dayIdx}_${slotKey}`;
+  try {
+    await updateDoc(weekRef(), { [field]: arrayRemove(name) });
+  } catch (e) { console.error(e); showToast('⚠️ Remove failed'); }
+}
+
+// ── Render ────────────────────────────────────────────────────────
+function renderGrid() {
+  const grid = $('cal-grid');
+  grid.innerHTML = '';
+
+  const today     = new Date();
+  const todayKey  = getWeekKey(today);
+  const todayDay  = today.getDay(); // 0=Sun..6=Sat
+  const mon       = weekMonday(currentWeekKey);
+  const isThisWeek = currentWeekKey === todayKey;
+
+  // ── Row 0: corner + day headers
+  const corner = document.createElement('div');
+  corner.className = 'corner';
+  grid.appendChild(corner);
+
+  for (let di = 0; di < 5; di++) {
+    const d = new Date(mon);
+    d.setUTCDate(mon.getUTCDate() + di);
+    const isToday = isThisWeek && (di + 1) === (todayDay === 0 ? 7 : todayDay);
+
+    const head = document.createElement('div');
+    head.className = 'day-head' + (isToday ? ' today' : '');
+    head.innerHTML = `<div class="day-name">${DAYS[di]}</div><div class="day-date">${fmtDate(d)}</div>`;
+    grid.appendChild(head);
+  }
+
+  // ── Rows 1-2: slot label + 5 cells
+  SLOTS.forEach(slot => {
+    const label = document.createElement('div');
+    label.className = `slot-label ${slot.cls}`;
+    label.textContent = slot.label;
+    grid.appendChild(label);
+
+    for (let di = 0; di < 5; di++) {
+      const dayIdx   = di + 1;         // 1–5
+      const field    = `d${dayIdx}_${slot.key}`;
+      const names    = weekData[field] || [];
+      const isMeHere = myName && names.includes(myName);
+      const isToday  = isThisWeek && dayIdx === (todayDay === 0 ? 7 : todayDay);
+
+      const cell = document.createElement('div');
+      cell.className = 'slot-cell' +
+        (isMeHere ? ' has-me' : '') +
+        (isToday  ? ' today-col' : '');
+
+      // Click on empty area = add me
+      cell.addEventListener('click', e => {
+        if (e.target.closest('.chip-del')) return;
+        if (!isMeHere) addName(dayIdx, slot.key);
+      });
+
+      // Chips
+      const wrap = document.createElement('div');
+      wrap.className = 'chips-wrap';
+
+      names.forEach(name => {
+        const c = nameColor(name);
+        const chip = document.createElement('div');
+        chip.className = 'chip';
+        chip.style.cssText = `background:${c.bg}22;border-color:${c.bg}66;color:${c.bg}`;
+        chip.innerHTML = `
+          <div class="chip-avatar" style="background:${c.bg}">${name[0].toUpperCase()}</div>
+          <span class="chip-name">${name}</span>
+          <button class="chip-del" title="Remove ${name}">✕</button>`;
+        chip.querySelector('.chip-del').addEventListener('click', e => {
+          e.stopPropagation();
+          removeName(dayIdx, slot.key, name);
+        });
+        wrap.appendChild(chip);
+      });
+
+      cell.appendChild(wrap);
+
+      // Add-me button
+      const btn = document.createElement('button');
+      btn.className = 'add-me-btn';
+      btn.textContent = isMeHere ? '✓ I\'m here' : '+ Add me';
+      btn.disabled = !myName;
+      if (isMeHere) {
+        btn.style.cssText = 'border-style:solid;color:#a78bfa;border-color:#a78bfa66;background:rgba(139,92,246,.15)';
+        btn.addEventListener('click', e => {
+          e.stopPropagation();
+          removeName(dayIdx, slot.key, myName);
+        });
+      } else {
+        btn.addEventListener('click', e => {
+          e.stopPropagation();
+          addName(dayIdx, slot.key);
+        });
+      }
+      cell.appendChild(btn);
+
+      grid.appendChild(cell);
+    }
+  });
+}
+
+// ── Name prompt ──────────────────────────────────────────────────
+function showPrompt() {
+  $('name-prompt').classList.add('visible');
+  $('prompt-input').focus();
+}
+
+// ── Init ─────────────────────────────────────────────────────────
+if (myName) {
+  $('my-name').value = myName;
+} else {
+  showPrompt();
+}
+
+subscribeWeek();
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(console.warn);
+</script>
+</body>
+</html>

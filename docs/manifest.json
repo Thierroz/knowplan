@@ -1,0 +1,13 @@
+{
+  "name": "KnowPlan",
+  "short_name": "KnowPlan",
+  "description": "Shared weekly morning & afternoon availability calendar.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0c0a1e",
+  "theme_color": "#0c0a1e",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
