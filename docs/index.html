@@ -573,8 +573,14 @@ async function loadUserActivities() {
 }
 
 async function saveUserActivities() {
-  try { await setDoc(userRef(myName), { activities: userActivities }, { merge: true }); }
-  catch (e) { console.error(e); showToast('Could not save activities'); }
+  try {
+    await setDoc(userRef(myName), { activities: userActivities }, { merge: true });
+    return true;
+  } catch (e) {
+    console.error(e);
+    showToast('Could not save activities — check connection');
+    return false;
+  }
 }
 
 // ── Activities settings modal ─────────────────────────────────────
@@ -614,10 +620,17 @@ $('act-new-label').addEventListener('keydown', e => { if (e.key === 'Enter') $('
 $('act-cancel').addEventListener('click', () => $('act-modal').classList.remove('open'));
 $('act-save').addEventListener('click', async () => {
   if (!actDraft.length) { showToast('Add at least one activity'); return; }
+  // Write to Firestore first; only update in-memory state on success
+  const prev = userActivities;
   userActivities = actDraft;
-  $('act-modal').classList.remove('open');
-  await saveUserActivities();
-  showToast('Activities saved');
+  const ok = await saveUserActivities();
+  if (ok) {
+    $('act-modal').classList.remove('open');
+    showToast('Activities saved');
+    renderGrid();   // refresh chips so labels update immediately
+  } else {
+    userActivities = prev;  // revert if save failed
+  }
 });
 $('picker-configure').addEventListener('click', openActModal);
 
