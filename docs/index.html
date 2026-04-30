@@ -138,9 +138,9 @@
     /* ── Calendar grid ── */
     .cal-grid {
       display: grid;
-      grid-template-columns: 88px repeat(5, minmax(150px, 1fr));
+      grid-template-columns: repeat(5, minmax(150px, 1fr));
       gap: 6px;
-      min-width: 840px;
+      min-width: 750px;
     }
 
     /* Day header cells */
@@ -155,18 +155,6 @@
     .day-date { font-size: .68rem; color: var(--muted); margin-top: 2px; }
     .day-head.today .day-name { color: var(--accent); }
 
-    /* Slot label cells */
-    .slot-label {
-      position: sticky; left: 0; z-index: 5;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 4px; padding: 12px 6px;
-      background: var(--bg);
-      border-radius: 10px;
-      font-size: .65rem; font-weight: 800; color: var(--muted);
-      text-transform: uppercase; letter-spacing: .1em;
-    }
-    .slot-label.morning::before  { content: 'AM'; }
-    .slot-label.afternoon::before { content: 'PM'; }
 
     /* Slot cells */
     .slot-cell {
@@ -792,8 +780,7 @@ function renderGrid() {
   const mon        = weekMonday(currentWeekKey);
   const isThisWeek = currentWeekKey === todayKey;
 
-  // Row 0: corner + day headers
-  grid.appendChild(Object.assign(document.createElement('div'), { className: 'corner' }));
+  // Row 0: day headers (no corner cell)
   for (let di = 0; di < 5; di++) {
     const d = new Date(mon); d.setUTCDate(mon.getUTCDate() + di);
     const isToday = isThisWeek && (di + 1) === (todayDay || 7);
@@ -803,12 +790,8 @@ function renderGrid() {
     grid.appendChild(head);
   }
 
-  // Rows 1-2: slot emoji label + 5 cells
+  // Rows 1-2: 5 cells per slot (no label column)
   SLOTS.forEach(slot => {
-    const label = document.createElement('div');
-    label.className = `slot-label ${slot.cls}`;
-    grid.appendChild(label);
-
     for (let di = 0; di < 5; di++) {
       const dayIdx  = di + 1;
       const field   = `d${dayIdx}_${slot.key}`;
