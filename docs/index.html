@@ -1196,6 +1196,10 @@
         const snap = await getDocFromServer(userRef(myName));
         if (snap.exists() && Array.isArray(snap.data().activities) && snap.data().activities.length) {
           userActivities = snap.data().activities;
+          // Always ensure KGB is present (protected activity)
+          if (!userActivities.find(a => a.id === 'kgb')) {
+            userActivities = [{ id: 'kgb', label: 'KGB' }, ...userActivities];
+          }
         } else {
           userActivities = [...DEFAULT_ACTIVITIES];
         }
@@ -1232,13 +1236,18 @@
       actDraft.forEach((act, i) => {
         const row = document.createElement('div');
         row.className = 'act-row';
+        const isFixed = act.id === 'kgb';
         row.innerHTML =
           `<span class="act-row-label">${act.label}</span>` +
-          `<button class="act-row-del" data-i="${i}" title="Remove">x</button>`;
-        row.querySelector('.act-row-del').addEventListener('click', () => {
-          actDraft.splice(i, 1);
-          renderActList();
-        });
+          (isFixed
+            ? `<span class="act-row-lock" title="Required — cannot be removed">🔒</span>`
+            : `<button class="act-row-del" data-i="${i}" title="Remove">x</button>`);
+        if (!isFixed) {
+          row.querySelector('.act-row-del').addEventListener('click', () => {
+            actDraft.splice(i, 1);
+            renderActList();
+          });
+        }
         list.appendChild(row);
       });
     }
