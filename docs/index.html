@@ -968,6 +968,87 @@
     #prompt-submit:active {
       opacity: .85;
     }
+    /* ── Admin panel ── */
+    #admin-btn {
+      margin-left: auto;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 1.05rem;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 8px;
+      line-height: 1;
+      transition: color .15s, background .15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #admin-btn:hover { color: var(--text); background: var(--surface2); }
+
+    /* shared modal overlay already defined — reuse .modal-overlay / .modal-card */
+    #admin-login-modal .modal-card,
+    #admin-panel-modal .modal-card { max-width: 340px; }
+
+    #admin-login-modal h3,
+    #admin-panel-modal h3 {
+      margin: 0 0 14px;
+      font-size: 1rem;
+      font-weight: 700;
+    }
+    .admin-field {
+      width: 100%;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: .88rem;
+      font-family: inherit;
+      outline: none;
+      box-sizing: border-box;
+      transition: border-color .2s;
+    }
+    .admin-field:focus { border-color: var(--accent); }
+    #admin-login-error {
+      color: #f87171;
+      font-size: .75rem;
+      margin-top: -4px;
+      margin-bottom: 8px;
+      display: none;
+    }
+    .admin-member-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: 9px;
+      font-size: .88rem;
+      font-weight: 600;
+      background: var(--surface);
+      margin-bottom: 6px;
+    }
+    .admin-member-row span { flex: 1; }
+    .admin-member-del {
+      flex-shrink: 0;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(248,113,113,.15);
+      color: #f87171;
+      font-size: .8rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background .15s;
+    }
+    .admin-member-del:hover { background: rgba(248,113,113,.35); }
+    .admin-panel-footer {
+      margin-top: 14px;
+      display: flex;
+      gap: 8px;
+    }
   </style>
 </head>
 
@@ -986,6 +1067,7 @@
       <button class="nav-pill" id="today-btn">Today</button>
       <button class="nav-pill" id="jump-btn">↗ Wk</button>
     </div>
+    <button id="admin-btn" title="Admin panel">Admin</button>
 
     <!-- Week-jump popover (appended to body, positioned by JS) -->
     <div id="week-jump-pop">
@@ -1053,7 +1135,7 @@
   <!-- Gipfel popover -->
   <div id="gipfel-pop">
     <div id="gipfel-pop-label">Confirm Gipfel duty done?</div>
-    <button id="gipfel-pop-btn">✅ Gipfelerfüllt</button>
+    <button id="gipfel-pop-btn">Gipfelerfüllt</button>
   </div>
 
   <!-- Activities settings modal -->
@@ -1085,6 +1167,35 @@
   </div>
 
   <div id="toast"></div>
+
+  <!-- Admin login modal -->
+  <div id="admin-login-modal" class="modal-overlay">
+    <div class="modal-card">
+      <h3>Admin Login</h3>
+      <input class="admin-field" id="admin-user" placeholder="Username" autocomplete="off" />
+      <input class="admin-field" id="admin-pass" type="password" placeholder="Password" autocomplete="off" />
+      <div id="admin-login-error">Wrong credentials, try again.</div>
+      <div class="modal-actions">
+        <button id="admin-login-cancel">Cancel</button>
+        <button id="admin-login-submit">Login</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin panel modal -->
+  <div id="admin-panel-modal" class="modal-overlay">
+    <div class="modal-card">
+      <h3>Team Members</h3>
+      <div id="admin-member-list"></div>
+      <div class="act-add-row" style="margin-top:10px">
+        <input class="act-add-input" id="admin-new-member" placeholder="Add member name…" maxlength="30" />
+        <button class="act-add-btn" id="admin-add-member-btn">Add</button>
+      </div>
+      <div class="admin-panel-footer">
+        <button id="admin-panel-close" style="flex:1">Close</button>
+      </div>
+    </div>
+  </div>
 
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js';
@@ -1150,7 +1261,92 @@
       { key: 'morning', label: 'AM' },
       { key: 'afternoon', label: 'PM' },
     ];
-    const MEMBERS = ['Cliff', 'Jonas', 'Markus', 'Patrick', 'Reto', 'Rolf', 'KnowJunior'];
+    const DEFAULT_MEMBERS = ['Cliff', 'Jonas', 'Markus', 'Patrick', 'Reto', 'Rolf', 'KnowJunior'];
+    let MEMBERS = [...DEFAULT_MEMBERS];
+    const ADMIN_USER = 'admin';
+    const ADMIN_PASS = '12345';
+    const configRef = () => doc(db, 'config', 'app');
+
+    // Populate both name selects from current MEMBERS
+    function populateNameSelects() {
+      const prevBar = $('my-name').value;
+      const prevPrompt = $('prompt-input').value;
+      [$('my-name'), $('prompt-input')].forEach((sel, idx) => {
+        const prev = idx === 0 ? prevBar : prevPrompt;
+        sel.innerHTML = `<option value="">— ${idx === 0 ? 'Choose' : 'Select'} your name —</option>`;
+        MEMBERS.forEach(m => {
+          const opt = document.createElement('option');
+          opt.value = m; opt.textContent = m;
+          sel.appendChild(opt);
+        });
+        if (MEMBERS.includes(prev)) sel.value = prev;
+      });
+    }
+
+    async function loadMembers() {
+      try {
+        const snap = await getDoc(configRef());
+        if (snap.exists() && Array.isArray(snap.data().members) && snap.data().members.length) {
+          MEMBERS = snap.data().members;
+        }
+      } catch { /* use defaults */ }
+      populateNameSelects();
+    }
+
+    async function saveMembersToFirestore() {
+      try { await setDoc(configRef(), { members: MEMBERS }, { merge: true }); }
+      catch (e) { console.error(e); showToast('⚠️ Could not save members'); }
+    }
+
+    // ── Admin panel logic ─────────────────────────────────────────────
+    function renderAdminMemberList() {
+      const list = $('admin-member-list');
+      list.innerHTML = '';
+      MEMBERS.forEach((m, i) => {
+        const row = document.createElement('div');
+        row.className = 'admin-member-row';
+        const avatar = `<div class="name-avatar" style="background:${nameColor(m).bg};width:20px;height:20px;font-size:.55rem">${m[0].toUpperCase()}</div>`;
+        row.innerHTML = `${avatar}<span>${m}</span><button class="admin-member-del" title="Remove">×</button>`;
+        row.querySelector('.admin-member-del').addEventListener('click', async () => {
+          MEMBERS.splice(i, 1);
+          await saveMembersToFirestore();
+          populateNameSelects();
+          renderGrid();
+          renderAdminMemberList();
+        });
+        list.appendChild(row);
+      });
+    }
+
+    $('admin-btn').addEventListener('click', () => {
+      $('admin-user').value = ''; $('admin-pass').value = '';
+      $('admin-login-error').style.display = 'none';
+      $('admin-login-modal').classList.add('open');
+    });
+    $('admin-login-cancel').addEventListener('click', () => $('admin-login-modal').classList.remove('open'));
+    $('admin-login-submit').addEventListener('click', () => {
+      if ($('admin-user').value.trim() === ADMIN_USER && $('admin-pass').value === ADMIN_PASS) {
+        $('admin-login-modal').classList.remove('open');
+        renderAdminMemberList();
+        $('admin-panel-modal').classList.add('open');
+      } else {
+        $('admin-login-error').style.display = 'block';
+      }
+    });
+    $('admin-pass').addEventListener('keydown', e => { if (e.key === 'Enter') $('admin-login-submit').click(); });
+    $('admin-panel-close').addEventListener('click', () => $('admin-panel-modal').classList.remove('open'));
+    $('admin-add-member-btn').addEventListener('click', async () => {
+      const name = $('admin-new-member').value.trim();
+      if (!name) return;
+      if (MEMBERS.includes(name)) { showToast(`“${name}” already exists`); return; }
+      MEMBERS.push(name);
+      $('admin-new-member').value = '';
+      await saveMembersToFirestore();
+      populateNameSelects();
+      renderGrid();
+      renderAdminMemberList();
+    });
+    $('admin-new-member').addEventListener('keydown', e => { if (e.key === 'Enter') $('admin-add-member-btn').click(); });
     const DEFAULT_ACTIVITIES = [
       { id: 'kgb', label: 'KGB' },
       { id: 'frei', label: 'Frei' },
@@ -1419,7 +1615,7 @@
       // Always-present "Other…" option — not in userActivities so it can't be deleted
       const otherBtn = document.createElement('button');
       otherBtn.className = 'picker-opt';
-      otherBtn.textContent = '✏️ Other…';
+      otherBtn.textContent = 'Other…';
       otherBtn.addEventListener('click', e => {
         e.stopPropagation();
         picker.querySelectorAll('.picker-opt').forEach(el => el.style.display = 'none');
@@ -1578,7 +1774,7 @@
         if (gipfelData) {
           const badge = document.createElement('div');
           badge.className = 'gipfel-badge fulfilled';
-          badge.innerHTML = `Gipfelstand = ${gipfelData.count}<br>Danke ${gipfelData.by} 🙏`;
+          badge.innerHTML = `Gipfelstand = ${gipfelData.count}<br>Danke ${gipfelData.by}`;
           badge.title = 'Click to undo';
           badge.addEventListener('click', async e => {
             e.stopPropagation();
@@ -1731,21 +1927,23 @@
     }
 
     // ── Init ─────────────────────────────────────────────────────────
-    if (myName) {
-      const opt = [...$('my-name').options].find(o => o.value === myName);
-      if (opt) {
-        $('my-name').value = myName;
-        loadUserActivities().then(subscribeWeek);
+    loadMembers().then(() => {
+      if (myName) {
+        const opt = [...$('my-name').options].find(o => o.value === myName);
+        if (opt) {
+          $('my-name').value = myName;
+          loadUserActivities().then(subscribeWeek);
+        } else {
+          myName = '';
+          localStorage.removeItem('knowplan_name');
+          showPrompt();
+          subscribeWeek();
+        }
       } else {
-        myName = '';
-        localStorage.removeItem('knowplan_name');
         showPrompt();
         subscribeWeek();
       }
-    } else {
-      showPrompt();
-      subscribeWeek();
-    }
+    });
 
     // subscribeWeek called above in each branch
 
