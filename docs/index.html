@@ -1919,8 +1919,7 @@
         const isToday = isThisWeek && dayIdx === (todayDay || 7);
         const isKgb = e => e && e.activity && e.activity.toLowerCase().includes('kgb');
         const kgbCount =
-          Object.values(weekData[`d${dayIdx}_morning`] || {}).filter(isKgb).length +
-          Object.values(weekData[`d${dayIdx}_afternoon`] || {}).filter(isKgb).length;
+          Object.values(weekData[`d${dayIdx}_morning`] || {}).filter(isKgb).length;
         const gipfelData = weekData[`gipfel_d${dayIdx}`];
 
         const head = document.createElement('div');
@@ -1971,7 +1970,7 @@
             nameCell.className = 'name-col-am';
             nameCell.innerHTML =
               `<div class="name-avatar" style="background:${c.bg}">${person.name[0].toUpperCase()}</div>` +
-              `<span style="color:${c.bg}">${person.name}</span>` +
+              `<span style="color:${c.fg}">${person.name}</span>` +
               `<span class="slot-label">AM</span>`;
           } else {
             nameCell.className = 'name-col-pm';
@@ -1995,7 +1994,7 @@
 
               const pill = document.createElement('div');
               pill.className = 'act-pill' + (isMe ? ' is-mine' : '');
-              pill.style.cssText = `background:${c.bg}22;border-color:${c.bg}66;color:${c.bg}`;
+              pill.style.cssText = `background:${c.bg}22;border-color:${c.bg}66;color:${c.fg}`;
               pill.innerHTML = `<span class="pill-label">${actLabel}</span>` +
                 (isMe ? `<button class="pill-del" title="Remove">×</button>` : '');
 
@@ -2041,7 +2040,7 @@
                 const cmt = document.createElement('div');
                 cmt.className = 'pill-comment';
                 cmt.textContent = entry.comment;
-                cmt.style.color = c.bg;
+                cmt.style.color = c.fg;
                 wrap.appendChild(cmt);
               }
               cell.appendChild(wrap);
