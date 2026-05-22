@@ -1358,8 +1358,16 @@
       { key: 'morning', label: 'AM' },
       { key: 'afternoon', label: 'PM' },
     ];
-    const DEFAULT_MEMBERS = ['Cliff', 'Jonas', 'Markus', 'Patrick', 'Reto', 'Rolf', 'KnowJunior'];
-    let MEMBERS = [...DEFAULT_MEMBERS];
+    const DEFAULT_MEMBERS = [
+      { id: 'Cliff', name: 'Cliff' },
+      { id: 'Jonas', name: 'Jonas' },
+      { id: 'Markus', name: 'Markus' },
+      { id: 'Patrick', name: 'Patrick' },
+      { id: 'Reto', name: 'Reto' },
+      { id: 'Rolf', name: 'Rolf' },
+      { id: 'KnowJunior', name: 'KnowJunior' }
+    ];
+    let MEMBERS = JSON.parse(JSON.stringify(DEFAULT_MEMBERS));
     const ADMIN_USER = 'admin';
     const ADMIN_PASS = '12345';
     const configRef = () => doc(db, 'config', 'app');
@@ -1373,10 +1381,10 @@
         sel.innerHTML = `<option value="">— ${idx === 0 ? 'Choose' : 'Select'} your name —</option>`;
         MEMBERS.forEach(m => {
           const opt = document.createElement('option');
-          opt.value = m; opt.textContent = m;
+          opt.value = m.id; opt.textContent = m.name;
           sel.appendChild(opt);
         });
-        if (MEMBERS.includes(prev)) sel.value = prev;
+        if (MEMBERS.some(m => m.id === prev)) sel.value = prev;
       });
     }
 
@@ -1384,7 +1392,7 @@
       try {
         const snap = await getDoc(configRef());
         if (snap.exists() && Array.isArray(snap.data().members) && snap.data().members.length) {
-          MEMBERS = snap.data().members;
+          MEMBERS = snap.data().members.map(m => typeof m === 'string' ? { id: m, name: m } : m);
         }
       } catch { /* use defaults */ }
       populateNameSelects();
@@ -1402,15 +1410,66 @@
       MEMBERS.forEach((m, i) => {
         const row = document.createElement('div');
         row.className = 'admin-member-row';
-        const avatar = `<div class="name-avatar" style="background:${nameColor(m).bg};width:20px;height:20px;font-size:.55rem">${m[0].toUpperCase()}</div>`;
-        row.innerHTML = `${avatar}<span>${m}</span><button class="admin-member-del" title="Remove">×</button>`;
-        row.querySelector('.admin-member-del').addEventListener('click', async () => {
-          MEMBERS.splice(i, 1);
+        row.style.display = 'flex';
+        row.style.alignItems = 'center';
+        row.style.gap = '8px';
+        row.style.padding = '4px 0';
+        
+        const avatar = `<div class="name-avatar" style="background:${nameColor(m.id).bg};width:20px;height:20px;font-size:.55rem">${m.name[0].toUpperCase()}</div>`;
+        
+        const inputStr = `<input type="text" class="admin-member-name-input" value="${m.name}" style="flex:1; padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px;" />`;
+        
+        const moveUp = `<button class="admin-member-move" style="padding:4px; cursor:pointer;" title="Move Up"${i===0?' disabled':''}>↑</button>`;
+        const moveDown = `<button class="admin-member-move" style="padding:4px; cursor:pointer;" title="Move Down"${i===MEMBERS.length-1?' disabled':''}>↓</button>`;
+        const del = `<button class="admin-member-del" style="padding:4px; cursor:pointer; color:red;" title="Remove">×</button>`;
+        
+        row.innerHTML = `${avatar}${inputStr}${moveUp}${moveDown}${del}`;
+        
+        // Name change event
+        const nameInput = row.querySelector('.admin-member-name-input');
+        nameInput.addEventListener('change', async (e) => {
+          const newName = e.target.value.trim();
+          if (newName) m.name = newName;
           await saveMembersToFirestore();
           populateNameSelects();
           renderGrid();
           renderAdminMemberList();
         });
+
+        // Up/Down/Del buttons
+        const btns = row.querySelectorAll('button');
+        const upBtn = btns[0];
+        const downBtn = btns[1];
+        const delBtn = btns[2];
+        
+        upBtn.addEventListener('click', async () => {
+          if (i > 0) {
+            [MEMBERS[i-1], MEMBERS[i]] = [MEMBERS[i], MEMBERS[i-1]];
+            await saveMembersToFirestore();
+            renderGrid();
+            renderAdminMemberList();
+          }
+        });
+        
+        downBtn.addEventListener('click', async () => {
+          if (i < MEMBERS.length - 1) {
+            [MEMBERS[i], MEMBERS[i+1]] = [MEMBERS[i+1], MEMBERS[i]];
+            await saveMembersToFirestore();
+            renderGrid();
+            renderAdminMemberList();
+          }
+        });
+        
+        delBtn.addEventListener('click', async () => {
+          if(confirm(`Remove ${m.name}? Data will remain in history.`)) {
+            MEMBERS.splice(i, 1);
+            await saveMembersToFirestore();
+            populateNameSelects();
+            renderGrid();
+            renderAdminMemberList();
+          }
+        });
+
         list.appendChild(row);
       });
     }
@@ -1435,8 +1494,8 @@
     $('admin-add-member-btn').addEventListener('click', async () => {
       const name = $('admin-new-member').value.trim();
       if (!name) return;
-      if (MEMBERS.includes(name)) { showToast(`“${name}” already exists`); return; }
-      MEMBERS.push(name);
+      if (MEMBERS.some(m => m.name === name)) { showToast(`“${name}” already exists`); return; }
+      MEMBERS.push({ id: 'mem_' + Date.now().toString(36), name });
       $('admin-new-member').value = '';
       await saveMembersToFirestore();
       populateNameSelects();
@@ -1902,8 +1961,8 @@
 
       // ── Person rows: 2 grid-rows per person (AM + PM) ──
       MEMBERS.forEach(person => {
-        const c = nameColor(person);
-        const isMe = person === myName;
+        const c = nameColor(person.id);
+        const isMe = person.id === myName;
 
         SLOTS.forEach((slot, si) => {
           // Name cell
@@ -1911,8 +1970,8 @@
           if (si === 0) {
             nameCell.className = 'name-col-am';
             nameCell.innerHTML =
-              `<div class="name-avatar" style="background:${c.bg}">${person[0].toUpperCase()}</div>` +
-              `<span style="color:${c.bg}">${person}</span>` +
+              `<div class="name-avatar" style="background:${c.bg}">${person.name[0].toUpperCase()}</div>` +
+              `<span style="color:${c.bg}">${person.name}</span>` +
               `<span class="slot-label">AM</span>`;
           } else {
             nameCell.className = 'name-col-pm';
@@ -1925,7 +1984,7 @@
             const dayIdx = di + 1;
             const isToday = isThisWeek && dayIdx === (todayDay || 7);
             const slotMap = weekData[`d${dayIdx}_${slot.key}`] || {};
-            const entry = slotMap[person];
+            const entry = slotMap[person.id];
             const rowCls = si === 0 ? ' am-row' : ' pm-row';
             const cell = document.createElement('div');
 
@@ -1954,7 +2013,7 @@
                 });
                 pill.querySelector('.pill-del').addEventListener('click', e => {
                   e.stopPropagation();
-                  removeEntry(dayIdx, slot.key, person);
+                  removeEntry(dayIdx, slot.key, person.id);
                 });
                 pill.addEventListener('click', e => {
                   if (!e.target.classList.contains('pill-del')) {
