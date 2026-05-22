@@ -1858,8 +1858,10 @@
         const dayIdx = di + 1;
         const d = new Date(mon); d.setUTCDate(mon.getUTCDate() + di);
         const isToday = isThisWeek && dayIdx === (todayDay || 7);
-        const kgbCount = Object.values(weekData[`d${dayIdx}_morning`] || {})
-          .filter(e => e.activity === 'kgb').length;
+        const isKgb = e => e && e.activity && e.activity.toLowerCase().includes('kgb');
+        const kgbCount =
+          Object.values(weekData[`d${dayIdx}_morning`] || {}).filter(isKgb).length +
+          Object.values(weekData[`d${dayIdx}_afternoon`] || {}).filter(isKgb).length;
         const gipfelData = weekData[`gipfel_d${dayIdx}`];
 
         const head = document.createElement('div');
