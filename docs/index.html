@@ -716,6 +716,17 @@
       background: rgba(34, 197, 94, .2);
     }
 
+    .gipfel-badge.discrepancy {
+      background: rgba(251, 146, 60, .12);
+      border-color: rgba(251, 146, 60, .5);
+      color: #fb923c;
+      cursor: pointer;
+    }
+
+    .gipfel-badge.discrepancy:hover {
+      background: rgba(251, 146, 60, .22);
+    }
+
     /* Gipfel popover */
     #gipfel-pop {
       display: none;
@@ -1958,9 +1969,16 @@
 
         if (gipfelData) {
           const badge = document.createElement('div');
-          badge.className = 'gipfel-badge fulfilled';
-          badge.innerHTML = `Gipfelstand = ${gipfelData.count}<br>Danke ${gipfelData.by}`;
-          badge.title = 'Click to undo';
+          if (gipfelData.count !== kgbCount && kgbCount > 0) {
+            // Discrepancy: count was registered but KGB morning total has changed
+            badge.className = 'gipfel-badge discrepancy';
+            badge.innerHTML = `⚠️ Gipfeldiskrepanz!<br>${gipfelData.by} bought ${gipfelData.count} but ${kgbCount} KGB today`;
+            badge.title = 'Click to undo';
+          } else {
+            badge.className = 'gipfel-badge fulfilled';
+            badge.innerHTML = `Gipfelstand = ${gipfelData.count}<br>Danke ${gipfelData.by}`;
+            badge.title = 'Click to undo';
+          }
           badge.addEventListener('click', async e => {
             e.stopPropagation();
             try { await updateDoc(weekRef(), { [`gipfel_d${dayIdx}`]: deleteField() }); }
