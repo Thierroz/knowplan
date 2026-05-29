@@ -2026,18 +2026,20 @@
               pill.innerHTML = `<span class="pill-label">${actLabel}</span>` +
                 (isMe ? `<button class="pill-del" title="Remove">×</button>` : '');
 
+              // All pills are draggable (so you can copy from anyone's calendar)
+              pill.draggable = true;
+              pill.style.cursor = isMe ? 'grab' : 'copy';
+              pill.addEventListener('dragstart', e => {
+                dragPayload = { activity: entry.activity, activityLabel: actLabel };
+                e.dataTransfer.effectAllowed = 'copy';
+                setTimeout(() => pill.classList.add('dragging'), 0);
+              });
+              pill.addEventListener('dragend', () => {
+                pill.classList.remove('dragging');
+                document.querySelectorAll('.drop-target').forEach(el => el.classList.remove('drop-target'));
+              });
+
               if (isMe) {
-                // Drag source
-                pill.draggable = true;
-                pill.addEventListener('dragstart', e => {
-                  dragPayload = { activity: entry.activity, activityLabel: actLabel };
-                  e.dataTransfer.effectAllowed = 'copy';
-                  setTimeout(() => pill.classList.add('dragging'), 0);
-                });
-                pill.addEventListener('dragend', () => {
-                  pill.classList.remove('dragging');
-                  document.querySelectorAll('.drop-target').forEach(el => el.classList.remove('drop-target'));
-                });
                 pill.querySelector('.pill-del').addEventListener('click', e => {
                   e.stopPropagation();
                   removeEntry(dayIdx, slot.key, person.id);
@@ -2048,7 +2050,7 @@
                     showCommentModal(dayIdx, slot.key);
                   }
                 });
-                // Drop target (replacing existing)
+                // Drop target (replacing existing entry in my row)
                 cell.addEventListener('dragover', e => { e.preventDefault(); cell.classList.add('drop-target'); });
                 cell.addEventListener('dragleave', () => cell.classList.remove('drop-target'));
                 cell.addEventListener('drop', async e => {
