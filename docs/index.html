@@ -59,6 +59,7 @@
 
     /* ── Header ── */
     #header {
+      position: -webkit-sticky;
       position: sticky;
       top: 0;
       z-index: 100;
@@ -344,6 +345,7 @@
     .cal-grid {
       display: grid;
       grid-template-columns: max-content repeat(5, minmax(max-content, 1fr));
+      min-width: max-content;
       width: 100%;
       border: 1px solid var(--border);
       border-radius: var(--radius);
@@ -353,6 +355,7 @@
     .name-col-head,
     .name-col-am,
     .name-col-pm {
+      position: -webkit-sticky;
       position: sticky;
       left: 0;
       z-index: 10;
