@@ -1923,7 +1923,10 @@
         const dayIdx = di + 1;
         const d = new Date(mon); d.setUTCDate(mon.getUTCDate() + di);
         const isToday = isThisWeek && dayIdx === (todayDay || 7);
-        const isKgb = e => e && e.activity && e.activity.toLowerCase().includes('kgb');
+        const isKgb = e => {
+          const text = ((e?.activity || '') + ' ' + (e?.activityLabel || '')).toLowerCase();
+          return text.includes('kgb') && !text.includes('nogipfel');
+        };
         const kgbCount =
           Object.values(weekData[`d${dayIdx}_morning`] || {}).filter(isKgb).length;
         const gipfelData = weekData[`gipfel_d${dayIdx}`];
