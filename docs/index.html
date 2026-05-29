@@ -1591,11 +1591,30 @@
         const row = document.createElement('div');
         row.className = 'act-row';
         const isFixed = act.id === 'kgb';
+        
+        const moveUp = `<button class="act-row-up" style="padding:2px 6px; cursor:pointer; background:transparent; border:none; color:var(--muted); font-size:1.1rem; line-height:1;" title="Move Up"${i === 0 ? ' disabled' : ''}>↑</button>`;
+        const moveDown = `<button class="act-row-down" style="padding:2px 6px; cursor:pointer; background:transparent; border:none; color:var(--muted); font-size:1.1rem; line-height:1;" title="Move Down"${i === actDraft.length - 1 ? ' disabled' : ''}>↓</button>`;
+        
         row.innerHTML =
           `<span class="act-row-label">${act.label}</span>` +
+          moveUp + moveDown +
           (isFixed
             ? `<span class="act-row-lock" title="Required — cannot be removed">🔒</span>`
             : `<button class="act-row-del" data-i="${i}" title="Remove">x</button>`);
+            
+        row.querySelector('.act-row-up').addEventListener('click', () => {
+          if (i > 0) {
+            [actDraft[i - 1], actDraft[i]] = [actDraft[i], actDraft[i - 1]];
+            renderActList();
+          }
+        });
+        row.querySelector('.act-row-down').addEventListener('click', () => {
+          if (i < actDraft.length - 1) {
+            [actDraft[i], actDraft[i + 1]] = [actDraft[i + 1], actDraft[i]];
+            renderActList();
+          }
+        });
+        
         if (!isFixed) {
           row.querySelector('.act-row-del').addEventListener('click', () => {
             actDraft.splice(i, 1);
