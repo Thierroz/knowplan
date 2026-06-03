@@ -727,6 +727,64 @@
       background: rgba(251, 146, 60, .22);
     }
 
+    /* ── Parking rows ── */
+    .parking-name-cell {
+      position: -webkit-sticky;
+      position: sticky;
+      left: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px 7px 10px;
+      background: #f0f4ff;
+      border-right: 1px solid var(--border);
+      border-top: 2px solid var(--border);
+      font-size: .8rem;
+      font-weight: 700;
+      white-space: nowrap;
+      color: #4a6fa5;
+    }
+
+    .parking-cell {
+      padding: 5px 6px;
+      background: #fafbff;
+      border-right: 1px solid var(--border);
+      border-top: 2px solid var(--border);
+      min-height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 3px;
+      cursor: pointer;
+      transition: background .12s;
+    }
+
+    .parking-cell:hover {
+      background: rgba(74, 111, 165, .08);
+    }
+
+    .parking-cell.today-col {
+      background: rgba(74, 111, 165, .04);
+    }
+
+    .parking-tag {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-size: .65rem;
+      font-weight: 700;
+      background: rgba(74, 111, 165, .15);
+      color: #4a6fa5;
+      white-space: nowrap;
+    }
+
+    .parking-tag.is-me {
+      background: rgba(139, 92, 246, .18);
+      color: var(--accent);
+    }
+
     /* Gipfel popover */
     #gipfel-pop {
       display: none;
@@ -1298,12 +1356,19 @@
 
   <!-- Admin panel modal -->
   <div id="admin-panel-modal" class="modal-overlay">
-    <div class="modal-card">
+    <div class="modal-card" style="max-width:420px">
       <h3>Team Members</h3>
       <div id="admin-member-list"></div>
       <div class="act-add-row" style="margin-top:10px">
         <input class="act-add-input" id="admin-new-member" placeholder="Add member name…" maxlength="30" />
         <button class="act-add-btn" id="admin-add-member-btn">Add</button>
+      </div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:16px 0 12px" />
+      <h3>🅿️ Parking Spots</h3>
+      <div id="admin-parking-list"></div>
+      <div class="act-add-row" style="margin-top:10px">
+        <input class="act-add-input" id="admin-new-parking" placeholder="Add parking spot name…" maxlength="30" />
+        <button class="act-add-btn" id="admin-add-parking-btn">Add</button>
       </div>
       <div class="admin-panel-footer">
         <button id="admin-panel-close" style="flex:1">Close</button>
@@ -1385,6 +1450,7 @@
       { id: 'KnowJunior', name: 'KnowJunior' }
     ];
     let MEMBERS = JSON.parse(JSON.stringify(DEFAULT_MEMBERS));
+    let PARKINGS = [];  // [{ id: 'parking_1', name: 'Parking HQ' }, ...]
     const ADMIN_USER = 'admin';
     const ADMIN_PASS = '12345';
     const configRef = () => doc(db, 'config', 'app');
@@ -1408,16 +1474,21 @@
     async function loadMembers() {
       try {
         const snap = await getDoc(configRef());
-        if (snap.exists() && Array.isArray(snap.data().members) && snap.data().members.length) {
-          MEMBERS = snap.data().members.map(m => typeof m === 'string' ? { id: m, name: m } : m);
+        if (snap.exists()) {
+          if (Array.isArray(snap.data().members) && snap.data().members.length) {
+            MEMBERS = snap.data().members.map(m => typeof m === 'string' ? { id: m, name: m } : m);
+          }
+          if (Array.isArray(snap.data().parkings)) {
+            PARKINGS = snap.data().parkings;
+          }
         }
       } catch { /* use defaults */ }
       populateNameSelects();
     }
 
     async function saveMembersToFirestore() {
-      try { await setDoc(configRef(), { members: MEMBERS }, { merge: true }); }
-      catch (e) { console.error(e); showToast('⚠️ Could not save members'); }
+      try { await setDoc(configRef(), { members: MEMBERS, parkings: PARKINGS }, { merge: true }); }
+      catch (e) { console.error(e); showToast('⚠️ Could not save config'); }
     }
 
     // ── Admin panel logic ─────────────────────────────────────────────
@@ -1501,6 +1572,7 @@
       if ($('admin-user').value.trim() === ADMIN_USER && $('admin-pass').value === ADMIN_PASS) {
         $('admin-login-modal').classList.remove('open');
         renderAdminMemberList();
+        renderAdminParkingList();
         $('admin-panel-modal').classList.add('open');
       } else {
         $('admin-login-error').style.display = 'block';
@@ -1520,6 +1592,75 @@
       renderAdminMemberList();
     });
     $('admin-new-member').addEventListener('keydown', e => { if (e.key === 'Enter') $('admin-add-member-btn').click(); });
+
+    // ── Admin parking logic ─────────────────────────────────────────
+    function renderAdminParkingList() {
+      const list = $('admin-parking-list');
+      list.innerHTML = '';
+      PARKINGS.forEach((p, i) => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:4px 0';
+
+        const icon = document.createElement('span');
+        icon.textContent = '🅿️';
+        icon.style.fontSize = '.9rem';
+
+        const nameInput = document.createElement('input');
+        nameInput.type = 'text';
+        nameInput.value = p.name;
+        nameInput.style.cssText = 'flex:1;padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:.85rem;font-family:inherit';
+        nameInput.addEventListener('change', async () => {
+          const v = nameInput.value.trim();
+          if (v) p.name = v;
+          await saveMembersToFirestore();
+          renderGrid();
+          renderAdminParkingList();
+        });
+
+        const upBtn = document.createElement('button');
+        upBtn.textContent = '↑'; upBtn.title = 'Move Up';
+        upBtn.style.cssText = 'padding:4px;cursor:pointer';
+        upBtn.disabled = i === 0;
+        upBtn.addEventListener('click', async () => {
+          if (i > 0) { [PARKINGS[i-1], PARKINGS[i]] = [PARKINGS[i], PARKINGS[i-1]]; await saveMembersToFirestore(); renderGrid(); renderAdminParkingList(); }
+        });
+
+        const downBtn = document.createElement('button');
+        downBtn.textContent = '↓'; downBtn.title = 'Move Down';
+        downBtn.style.cssText = 'padding:4px;cursor:pointer';
+        downBtn.disabled = i === PARKINGS.length - 1;
+        downBtn.addEventListener('click', async () => {
+          if (i < PARKINGS.length - 1) { [PARKINGS[i], PARKINGS[i+1]] = [PARKINGS[i+1], PARKINGS[i]]; await saveMembersToFirestore(); renderGrid(); renderAdminParkingList(); }
+        });
+
+        const delBtn = document.createElement('button');
+        delBtn.textContent = '×'; delBtn.title = 'Remove';
+        delBtn.style.cssText = 'padding:4px;cursor:pointer;color:red';
+        delBtn.addEventListener('click', async () => {
+          if (confirm(`Remove parking "${p.name}"?`)) {
+            PARKINGS.splice(i, 1);
+            await saveMembersToFirestore();
+            renderGrid();
+            renderAdminParkingList();
+          }
+        });
+
+        row.append(icon, nameInput, upBtn, downBtn, delBtn);
+        list.appendChild(row);
+      });
+    }
+
+    $('admin-add-parking-btn').addEventListener('click', async () => {
+      const name = $('admin-new-parking').value.trim();
+      if (!name) return;
+      if (PARKINGS.some(p => p.name === name)) { showToast(`"${name}" already exists`); return; }
+      PARKINGS.push({ id: 'park_' + Date.now().toString(36), name });
+      $('admin-new-parking').value = '';
+      await saveMembersToFirestore();
+      renderGrid();
+      renderAdminParkingList();
+    });
+    $('admin-new-parking').addEventListener('keydown', e => { if (e.key === 'Enter') $('admin-add-parking-btn').click(); });
     const DEFAULT_ACTIVITIES = [
       { id: 'kgb', label: 'KGB' },
       { id: 'frei', label: 'Frei' },
@@ -2120,6 +2261,58 @@
             grid.appendChild(cell);
           }
         });
+      });
+
+      // ── Parking rows ──
+      PARKINGS.forEach(spot => {
+        // Name cell
+        const nameCell = document.createElement('div');
+        nameCell.className = 'parking-name-cell';
+        nameCell.innerHTML = `🅿️ ${spot.name}`;
+        grid.appendChild(nameCell);
+
+        // 5 day cells for this parking spot
+        for (let di = 0; di < 5; di++) {
+          const dayIdx = di + 1;
+          const isToday = isThisWeek && dayIdx === (todayDay || 7);
+          const parkKey = `parking_${spot.id}_d${dayIdx}`;
+          const occupants = weekData[parkKey] || [];
+          const cell = document.createElement('div');
+          cell.className = 'parking-cell' + (isToday ? ' today-col' : '');
+
+          occupants.forEach(uid => {
+            const member = MEMBERS.find(m => m.id === uid);
+            const displayName = member ? member.name : uid;
+            const tag = document.createElement('span');
+            tag.className = 'parking-tag' + (uid === myName ? ' is-me' : '');
+            tag.textContent = displayName;
+            cell.appendChild(tag);
+          });
+
+          cell.addEventListener('click', async () => {
+            if (!myName) { showPrompt(); return; }
+            const current = weekData[parkKey] || [];
+            let updated;
+            if (current.includes(myName)) {
+              updated = current.filter(u => u !== myName);
+            } else {
+              updated = [...current, myName];
+            }
+            try {
+              if (updated.length === 0) {
+                await updateDoc(weekRef(), { [parkKey]: deleteField() });
+              } else {
+                await updateDoc(weekRef(), { [parkKey]: updated });
+              }
+            } catch {
+              try {
+                await setDoc(weekRef(), { [parkKey]: updated.length ? updated : [] }, { merge: true });
+              } catch (e) { console.error(e); showToast('⚠️ Save failed'); }
+            }
+          });
+
+          grid.appendChild(cell);
+        }
       });
     }
 
