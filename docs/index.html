@@ -1480,18 +1480,25 @@
     const configRef = () => doc(db, 'config', 'app');
 
     // Populate both name selects from current MEMBERS
+    const VISITOR_ID = '__visitor__';
+
     function populateNameSelects() {
       const prevBar = $('my-name').value;
       const prevPrompt = $('prompt-input').value;
       [$('my-name'), $('prompt-input')].forEach((sel, idx) => {
         const prev = idx === 0 ? prevBar : prevPrompt;
         sel.innerHTML = `<option value="">— ${idx === 0 ? 'Choose' : 'Select'} your name —</option>`;
+        // Add Visitor option first
+        const visOpt = document.createElement('option');
+        visOpt.value = VISITOR_ID;
+        visOpt.textContent = '👁 Visitor (read only)';
+        sel.appendChild(visOpt);
         MEMBERS.forEach(m => {
           const opt = document.createElement('option');
           opt.value = m.id; opt.textContent = m.name;
           sel.appendChild(opt);
         });
-        if (MEMBERS.some(m => m.id === prev)) sel.value = prev;
+        if (prev === VISITOR_ID || MEMBERS.some(m => m.id === prev)) sel.value = prev;
       });
     }
 
@@ -1836,11 +1843,19 @@
         localStorage.setItem('knowplan_name', myName);
         $('my-name').value = myName;
         $('name-prompt').classList.remove('visible');
-        // Reset immediately so the picker never shows the previous user's
-        // activities during the async Firestore fetch
-        userActivities = [...DEFAULT_ACTIVITIES];
-        closePicker();
-        loadUserActivities().then(() => renderGrid());
+        // Show/hide copy-last-week for visitors
+        const copyBtn = $('copy-last-week');
+        if (copyBtn) copyBtn.style.display = (myName === VISITOR_ID) ? 'none' : '';
+        if (myName === VISITOR_ID) {
+          // Visitor: read-only, no activity loading needed
+          userActivities = [];
+          closePicker();
+          renderGrid();
+        } else {
+          userActivities = [...DEFAULT_ACTIVITIES];
+          closePicker();
+          loadUserActivities().then(() => renderGrid());
+        }
       }
     }
 
@@ -2337,6 +2352,7 @@
 
             cell.addEventListener('click', async () => {
               if (!myName) { showPrompt(); return; }
+              if (myName === VISITOR_ID) return; // read-only
               const current = weekData[parkKey] || [];
               let updated;
               if (current.includes(myName)) {
