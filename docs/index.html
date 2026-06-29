@@ -1402,7 +1402,7 @@
     </select>
     <div id="name-bar-actions">
       <button id="change-pwd-btn" title="Passwort ändern">⚙️</button>
-      <button id="copy-last-week" title="Deine Einträge der letzten Woche in diese Woche kopieren">Letzte Woche</button>
+      <button id="copy-last-week" title="Wie letzte Woche: Einträge in diese Woche kopieren">Wie letzte Woche</button>
     </div>
   </div>
 
@@ -1607,7 +1607,7 @@
       return getWeekKey(mon);
     }
 
-    const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+    const DAYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr'];
     const SLOTS = [
       { key: 'morning', label: 'AM' },
       { key: 'afternoon', label: 'PM' },
@@ -2395,7 +2395,7 @@
         }
         showToast(`${Object.keys(updates).length} Eintrag/Einträge von letzter Woche kopiert!`);
       } catch (e) { console.error(e); showToast('Kopieren fehlgeschlagen'); }
-      finally { btn.disabled = false; btn.textContent = 'Letzte Woche'; }
+      finally { btn.disabled = false; btn.textContent = 'Wie letzte Woche'; }
     }
     $('copy-last-week').addEventListener('click', copyLastWeek);
 
