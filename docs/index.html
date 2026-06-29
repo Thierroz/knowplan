@@ -280,14 +280,42 @@
       color: var(--text);
     }
 
-    .name-hint {
-      font-size: .7rem;
+    /* Change-password cogwheel button */
+    #change-pwd-btn {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
       color: var(--muted);
+      font-size: 1.1rem;
+      cursor: pointer;
+      padding: 0;
+      flex-shrink: 0;
+      transition: color .15s, border-color .15s, background .15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    #change-pwd-btn:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+      background: rgba(139,92,246,.08);
+    }
+
+    /* Right-side button group in name bar */
+    #name-bar-actions {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
     }
 
     /* Copy-last-week button */
     #copy-last-week {
-      margin-left: auto;
       display: flex;
       align-items: center;
       gap: 6px;
@@ -1141,42 +1169,69 @@
       opacity: .85;
     }
 
-    /* Password input inside prompt */
+    /* Password row: flex layout so Show button never overlaps input */
     .prompt-pwd-row {
-      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 0;
       margin-bottom: 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface);
+      transition: border-color .2s;
+      overflow: hidden;
+    }
+
+    .prompt-pwd-row:focus-within {
+      border-color: var(--accent);
     }
 
     .prompt-pwd-row input {
-      width: 100%;
-      padding: 13px 42px 13px 13px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
+      flex: 1;
+      min-width: 0;
+      padding: 13px;
+      background: transparent;
+      border: none;
       color: var(--text);
       font-size: 1rem;
       font-family: inherit;
       outline: none;
-      transition: border-color .2s;
-      box-sizing: border-box;
+      /* Suppress native browser password reveal/key icon */
+      -webkit-appearance: none;
     }
 
-    .prompt-pwd-row input:focus {
-      border-color: var(--accent);
+    /* Suppress native browser password controls */
+    .prompt-pwd-row input::-webkit-credentials-auto-fill-button,
+    .prompt-pwd-row input::-webkit-strong-password-auto-fill-button {
+      display: none !important;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .prompt-pwd-row input::-ms-reveal,
+    .prompt-pwd-row input::-ms-clear {
+      display: none;
     }
 
     .prompt-pwd-toggle {
-      position: absolute;
-      right: 12px;
-      top: 50%;
-      transform: translateY(-50%);
+      flex-shrink: 0;
       background: none;
       border: none;
+      border-left: 1px solid var(--border);
       cursor: pointer;
       color: var(--muted);
-      font-size: .85rem;
-      padding: 4px;
+      font-size: .82rem;
+      font-family: inherit;
+      padding: 0 13px;
+      height: 100%;
+      min-height: 46px;
       line-height: 1;
+      white-space: nowrap;
+      transition: color .15s;
+    }
+
+    .prompt-pwd-toggle:hover {
+      color: var(--accent);
     }
 
     .prompt-error {
@@ -1189,25 +1244,6 @@
 
     .prompt-error.visible {
       display: block;
-    }
-
-    /* Change-password button in name bar */
-    #change-pwd-btn {
-      background: none;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--muted);
-      font-size: .7rem;
-      padding: 4px 8px;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: color .15s, border-color .15s;
-      display: none;
-    }
-
-    #change-pwd-btn:hover {
-      color: var(--accent);
-      border-color: var(--accent);
     }
 
     /* ── Admin panel ── */
@@ -1354,8 +1390,10 @@
       <option value="Rolf">Rolf</option>
       <option value="KnowJunior">KnowJunior</option>
     </select>
-    <button id="change-pwd-btn" title="Change your password">Change password</button>
-    <button id="copy-last-week" title="Copy your slots from last week into this week">Copy last week</button>
+    <div id="name-bar-actions">
+      <button id="change-pwd-btn" title="Change your password">⚙️</button>
+      <button id="copy-last-week" title="Copy your slots from last week into this week">Copy last week</button>
+    </div>
   </div>
 
   <!-- Change password modal -->
@@ -1590,7 +1628,6 @@
     }
 
     async function verifyPassword(memberId, input) {
-      if (memberId === VISITOR_ID) return true;  // no password for visitor
       const stored = PASSWORDS[memberId];
       if (!stored) {
         // No password set yet — accept default and store it
@@ -1612,6 +1649,8 @@
       inp.type = show ? 'text' : 'password';
       btn.textContent = show ? 'Hide' : 'Show';
     }
+    // Expose globally so inline onclick= handlers in modals can reach it
+    window.togglePwdVis = togglePwdVis;
 
     function populateNameSelects() {
       const prevBar = $('my-name').value;
@@ -1977,8 +2016,6 @@
 
     // Hide password row for Visitor
     $('prompt-input').addEventListener('change', () => {
-      const isVisitor = $('prompt-input').value === VISITOR_ID;
-      $('prompt-pwd-row').style.display = isVisitor ? 'none' : '';
       $('prompt-error').classList.remove('visible');
     });
 
@@ -2014,7 +2051,7 @@
       const copyBtn = $('copy-last-week');
       const pwdBtn = $('change-pwd-btn');
       if (copyBtn) copyBtn.style.display = isVisitor ? 'none' : '';
-      if (pwdBtn) pwdBtn.style.display = isVisitor ? 'none' : 'inline-block';
+      if (pwdBtn) pwdBtn.style.display = isVisitor ? 'none' : 'flex';
 
       if (isVisitor) {
         userActivities = [];
@@ -2034,8 +2071,6 @@
       $('prompt-input').value = name;
       $('prompt-pwd').value = '';
       $('prompt-error').classList.remove('visible');
-      const isVisitor = name === VISITOR_ID;
-      $('prompt-pwd-row').style.display = isVisitor ? 'none' : '';
       $('name-prompt').classList.add('visible');
       $('prompt-pwd').focus();
     });
