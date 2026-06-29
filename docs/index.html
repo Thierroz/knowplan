@@ -183,6 +183,17 @@
       pointer-events: none;
     }
 
+    /* Heute button: always clickable even on current week */
+    #today-btn.is-current {
+      opacity: .6;
+      cursor: pointer;
+      pointer-events: auto;
+    }
+
+    #today-btn.is-current:hover {
+      opacity: 1;
+    }
+
     /* Week-jump popover */
     #week-jump-pop {
       display: none;
@@ -1442,7 +1453,8 @@
 
   <!-- Name prompt overlay -->
   <div id="name-prompt">
-    <div class="prompt-card">
+    <div class="prompt-card" style="position:relative">
+      <button id="prompt-cancel" title="Abbrechen" style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:1.3rem;line-height:1;cursor:pointer;color:var(--muted);padding:4px">&#x2715;</button>
       <h2>Willkommen bei KnowPlan</h2>
       <p>Wähle deinen Namen und gib dein Passwort ein.</p>
       <select id="prompt-input">
@@ -2074,9 +2086,12 @@
       }
     }
 
+    let previousName = myName; // track who was logged in before a switch attempt
+
     $('my-name').addEventListener('change', () => {
       const name = $('my-name').value;
       if (!name) return;
+      previousName = myName; // save current user so we can revert on cancel
       // Show the prompt for password entry (pre-select name)
       $('prompt-input').value = name;
       $('prompt-pwd').value = '';
@@ -2084,6 +2099,14 @@
       $('name-prompt').classList.add('visible');
       $('prompt-pwd').focus();
     });
+
+    function cancelPrompt() {
+      $('name-prompt').classList.remove('visible');
+      $('prompt-error').classList.remove('visible');
+      // Revert select to previously logged-in user (or blank if none)
+      $('my-name').value = previousName || '';
+    }
+    $('prompt-cancel').addEventListener('click', cancelPrompt);
 
     $('prompt-submit').addEventListener('click', () => applyName($('prompt-input').value, $('prompt-pwd').value));
     $('prompt-input').addEventListener('change', () => {
