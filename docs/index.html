@@ -1444,7 +1444,7 @@
   <!-- Name prompt overlay -->
   <div id="name-prompt">
     <div class="prompt-card" style="position:relative">
-      <button id="prompt-cancel" title="Abbrechen" style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:1.3rem;line-height:1;cursor:pointer;color:var(--muted);padding:4px">&#x2715;</button>
+      <button id="prompt-cancel" title="Abbrechen" style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:1.3rem;line-height:1;cursor:pointer;color:var(--muted);padding:4px;display:none">&#x2715;</button>
       <h2>Willkommen bei KnowPlan</h2>
       <p>Wähle deinen Namen und gib dein Passwort ein.</p>
       <select id="prompt-input">
@@ -2086,6 +2086,7 @@
       $('prompt-input').value = name;
       $('prompt-pwd').value = '';
       $('prompt-error').classList.remove('visible');
+      $('prompt-cancel').style.display = 'block'; // allow cancel — user is just switching
       $('name-prompt').classList.add('visible');
       $('prompt-pwd').focus();
     });
@@ -2662,8 +2663,9 @@
     }
 
     // ── Name prompt ──────────────────────────────────────────────────
-    function showPrompt() {
+    function showPrompt(allowCancel = false) {
       $('name-prompt').classList.add('visible');
+      $('prompt-cancel').style.display = allowCancel ? 'block' : 'none';
       $('prompt-input').focus();
       // Pre-select in prompt if bar already has a value
       if ($('my-name').value) $('prompt-input').value = $('my-name').value;
