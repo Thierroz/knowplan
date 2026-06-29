@@ -1141,6 +1141,75 @@
       opacity: .85;
     }
 
+    /* Password input inside prompt */
+    .prompt-pwd-row {
+      position: relative;
+      margin-bottom: 12px;
+    }
+
+    .prompt-pwd-row input {
+      width: 100%;
+      padding: 13px 42px 13px 13px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 1rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color .2s;
+      box-sizing: border-box;
+    }
+
+    .prompt-pwd-row input:focus {
+      border-color: var(--accent);
+    }
+
+    .prompt-pwd-toggle {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: .85rem;
+      padding: 4px;
+      line-height: 1;
+    }
+
+    .prompt-error {
+      color: #ef4444;
+      font-size: .78rem;
+      margin: -6px 0 10px;
+      text-align: left;
+      display: none;
+    }
+
+    .prompt-error.visible {
+      display: block;
+    }
+
+    /* Change-password button in name bar */
+    #change-pwd-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: .7rem;
+      padding: 4px 8px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: color .15s, border-color .15s;
+      display: none;
+    }
+
+    #change-pwd-btn:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
     /* ── Admin panel ── */
     #admin-btn {
       margin-left: auto;
@@ -1285,7 +1354,33 @@
       <option value="Rolf">Rolf</option>
       <option value="KnowJunior">KnowJunior</option>
     </select>
+    <button id="change-pwd-btn" title="Change your password">Change password</button>
     <button id="copy-last-week" title="Copy your slots from last week into this week">Copy last week</button>
+  </div>
+
+  <!-- Change password modal -->
+  <div class="modal-overlay" id="change-pwd-modal">
+    <div class="modal-card" style="max-width:360px">
+      <h3>Change Password</h3>
+      <p style="font-size:.82rem;color:var(--muted);margin-bottom:14px">Enter your current password, then choose a new one.</p>
+      <div class="prompt-pwd-row" style="margin-bottom:10px">
+        <input type="password" id="cpwd-current" placeholder="Current password" autocomplete="current-password" />
+        <button class="prompt-pwd-toggle" type="button" tabindex="-1" onclick="togglePwdVis('cpwd-current',this)">Show</button>
+      </div>
+      <div class="prompt-pwd-row" style="margin-bottom:10px">
+        <input type="password" id="cpwd-new" placeholder="New password" autocomplete="new-password" />
+        <button class="prompt-pwd-toggle" type="button" tabindex="-1" onclick="togglePwdVis('cpwd-new',this)">Show</button>
+      </div>
+      <div class="prompt-pwd-row" style="margin-bottom:14px">
+        <input type="password" id="cpwd-confirm" placeholder="Confirm new password" autocomplete="new-password" />
+        <button class="prompt-pwd-toggle" type="button" tabindex="-1" onclick="togglePwdVis('cpwd-confirm',this)">Show</button>
+      </div>
+      <div class="prompt-error" id="cpwd-error"></div>
+      <div class="admin-panel-footer">
+        <button id="cpwd-submit" style="flex:1;background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:#fff;border:none">Save</button>
+        <button id="cpwd-cancel" style="flex:1">Cancel</button>
+      </div>
+    </div>
   </div>
 
   <!-- Calendar -->
@@ -1301,7 +1396,7 @@
   <div id="name-prompt">
     <div class="prompt-card">
       <h2>Welcome to KnowPlan</h2>
-      <p>Choose your name to start adding yourself to the shared calendar.</p>
+      <p>Choose your name and enter your password.</p>
       <select id="prompt-input">
         <option value="">— Select your name —</option>
         <option value="Cliff">Cliff</option>
@@ -1312,6 +1407,11 @@
         <option value="Rolf">Rolf</option>
         <option value="KnowJunior">KnowJunior</option>
       </select>
+      <div class="prompt-pwd-row" id="prompt-pwd-row">
+        <input type="password" id="prompt-pwd" placeholder="Password" autocomplete="current-password" />
+        <button class="prompt-pwd-toggle" id="prompt-pwd-toggle" type="button" tabindex="-1">Show</button>
+      </div>
+      <div class="prompt-error" id="prompt-error">Incorrect password. Please try again.</div>
       <button id="prompt-submit">Let's go →</button>
     </div>
   </div>
@@ -1481,6 +1581,37 @@
 
     // Populate both name selects from current MEMBERS
     const VISITOR_ID = '__visitor__';
+    const DEFAULT_PWD = '12345';
+    let PASSWORDS = {};  // { memberId: sha256hex }
+
+    async function sha256(str) {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    async function verifyPassword(memberId, input) {
+      if (memberId === VISITOR_ID) return true;  // no password for visitor
+      const stored = PASSWORDS[memberId];
+      if (!stored) {
+        // No password set yet — accept default and store it
+        const defHash = await sha256(DEFAULT_PWD);
+        if (await sha256(input) === defHash || input === DEFAULT_PWD) {
+          PASSWORDS[memberId] = defHash;
+          await saveMembersToFirestore();
+          return true;
+        }
+        return false;
+      }
+      return (await sha256(input)) === stored;
+    }
+
+    function togglePwdVis(inputId, btn) {
+      const inp = $(inputId);
+      if (!inp) return;
+      const show = inp.type === 'password';
+      inp.type = show ? 'text' : 'password';
+      btn.textContent = show ? 'Hide' : 'Show';
+    }
 
     function populateNameSelects() {
       const prevBar = $('my-name').value;
@@ -1512,13 +1643,16 @@
           if (Array.isArray(snap.data().parkings)) {
             PARKINGS = snap.data().parkings;
           }
+          if (snap.data().passwords && typeof snap.data().passwords === 'object') {
+            PASSWORDS = snap.data().passwords;
+          }
         }
       } catch { /* use defaults */ }
       populateNameSelects();
     }
 
     async function saveMembersToFirestore() {
-      try { await setDoc(configRef(), { members: MEMBERS, parkings: PARKINGS }, { merge: true }); }
+      try { await setDoc(configRef(), { members: MEMBERS, parkings: PARKINGS, passwords: PASSWORDS }, { merge: true }); }
       catch (e) { console.error(e); showToast('⚠️ Could not save config'); }
     }
 
@@ -1615,7 +1749,9 @@
       const name = $('admin-new-member').value.trim();
       if (!name) return;
       if (MEMBERS.some(m => m.name === name)) { showToast(`“${name}” already exists`); return; }
-      MEMBERS.push({ id: 'mem_' + Date.now().toString(36), name });
+      const newId = 'mem_' + Date.now().toString(36);
+      MEMBERS.push({ id: newId, name });
+      PASSWORDS[newId] = await sha256(DEFAULT_PWD);
       $('admin-new-member').value = '';
       await saveMembersToFirestore();
       populateNameSelects();
@@ -1836,34 +1972,123 @@
     });
     $('picker-configure').addEventListener('click', openActModal);
 
+    // ── Password show/hide toggle in login prompt ────────────────────
+    $('prompt-pwd-toggle').addEventListener('click', () => togglePwdVis('prompt-pwd', $('prompt-pwd-toggle')));
+
+    // Hide password row for Visitor
+    $('prompt-input').addEventListener('change', () => {
+      const isVisitor = $('prompt-input').value === VISITOR_ID;
+      $('prompt-pwd-row').style.display = isVisitor ? 'none' : '';
+      $('prompt-error').classList.remove('visible');
+    });
+
     // ── Name handling ────────────────────────────────────────────────
-    function applyName(name) {
+    async function applyName(name, password) {
       myName = name.trim();
-      if (myName) {
-        localStorage.setItem('knowplan_name', myName);
-        $('my-name').value = myName;
-        $('name-prompt').classList.remove('visible');
-        // Show/hide copy-last-week for visitors
-        const copyBtn = $('copy-last-week');
-        if (copyBtn) copyBtn.style.display = (myName === VISITOR_ID) ? 'none' : '';
-        if (myName === VISITOR_ID) {
-          // Visitor: read-only, no activity loading needed
-          userActivities = [];
-          closePicker();
-          renderGrid();
-        } else {
-          userActivities = [...DEFAULT_ACTIVITIES];
-          closePicker();
-          loadUserActivities().then(() => renderGrid());
+      if (!myName) return;
+
+      // Visitor: no password check
+      if (myName !== VISITOR_ID) {
+        const pwd = password !== undefined ? password : '';
+        const ok = await verifyPassword(myName, pwd);
+        if (!ok) {
+          showToast('Incorrect password');
+          // Re-show prompt with error
+          $('prompt-error').classList.add('visible');
+          $('name-prompt').classList.add('visible');
+          $('prompt-input').value = myName;
+          $('prompt-pwd').value = '';
+          $('prompt-pwd').focus();
+          myName = '';
+          return;
         }
+      }
+
+      localStorage.setItem('knowplan_name', myName);
+      $('my-name').value = myName;
+      $('name-prompt').classList.remove('visible');
+      $('prompt-error').classList.remove('visible');
+
+      // Show/hide change-pwd & copy-last-week
+      const isVisitor = myName === VISITOR_ID;
+      const copyBtn = $('copy-last-week');
+      const pwdBtn = $('change-pwd-btn');
+      if (copyBtn) copyBtn.style.display = isVisitor ? 'none' : '';
+      if (pwdBtn) pwdBtn.style.display = isVisitor ? 'none' : 'inline-block';
+
+      if (isVisitor) {
+        userActivities = [];
+        closePicker();
+        renderGrid();
+      } else {
+        userActivities = [...DEFAULT_ACTIVITIES];
+        closePicker();
+        loadUserActivities().then(() => renderGrid());
       }
     }
 
-    $('my-name').addEventListener('change', () => applyName($('my-name').value));
+    $('my-name').addEventListener('change', () => {
+      const name = $('my-name').value;
+      if (!name) return;
+      // Show the prompt for password entry (pre-select name)
+      $('prompt-input').value = name;
+      $('prompt-pwd').value = '';
+      $('prompt-error').classList.remove('visible');
+      const isVisitor = name === VISITOR_ID;
+      $('prompt-pwd-row').style.display = isVisitor ? 'none' : '';
+      $('name-prompt').classList.add('visible');
+      $('prompt-pwd').focus();
+    });
 
-    $('prompt-submit').addEventListener('click', () => applyName($('prompt-input').value));
+    $('prompt-submit').addEventListener('click', () => applyName($('prompt-input').value, $('prompt-pwd').value));
     $('prompt-input').addEventListener('change', () => {
-      if ($('prompt-input').value) applyName($('prompt-input').value);
+      if ($('prompt-input').value) {
+        // Auto-focus password when name is selected
+        if ($('prompt-input').value !== VISITOR_ID) $('prompt-pwd').focus();
+      }
+    });
+    $('prompt-pwd').addEventListener('keydown', e => { if (e.key === 'Enter') $('prompt-submit').click(); });
+
+    // ── Change password modal ────────────────────────────────────────
+    $('change-pwd-btn').addEventListener('click', () => {
+      $('cpwd-current').value = '';
+      $('cpwd-new').value = '';
+      $('cpwd-confirm').value = '';
+      $('cpwd-error').textContent = '';
+      $('cpwd-error').classList.remove('visible');
+      $('change-pwd-modal').classList.add('open');
+      $('cpwd-current').focus();
+    });
+    $('cpwd-cancel').addEventListener('click', () => $('change-pwd-modal').classList.remove('open'));
+    $('change-pwd-modal').addEventListener('click', e => { if (e.target === $('change-pwd-modal')) $('change-pwd-modal').classList.remove('open'); });
+    $('cpwd-submit').addEventListener('click', async () => {
+      const current = $('cpwd-current').value;
+      const newPwd = $('cpwd-new').value;
+      const confirm = $('cpwd-confirm').value;
+      const errEl = $('cpwd-error');
+      errEl.textContent = '';
+      errEl.classList.remove('visible');
+
+      if (!current || !newPwd || !confirm) {
+        errEl.textContent = 'Please fill in all fields.'; errEl.classList.add('visible'); return;
+      }
+      if (newPwd !== confirm) {
+        errEl.textContent = 'New passwords do not match.'; errEl.classList.add('visible'); return;
+      }
+      if (newPwd.length < 4) {
+        errEl.textContent = 'Password must be at least 4 characters.'; errEl.classList.add('visible'); return;
+      }
+      const ok = await verifyPassword(myName, current);
+      if (!ok) {
+        errEl.textContent = 'Current password is incorrect.'; errEl.classList.add('visible'); return;
+      }
+      PASSWORDS[myName] = await sha256(newPwd);
+      await saveMembersToFirestore();
+      $('change-pwd-modal').classList.remove('open');
+      showToast('Password changed successfully');
+    });
+    ['cpwd-current','cpwd-new','cpwd-confirm'].forEach(id => {
+      $(id).addEventListener('keydown', e => { if (e.key === 'Enter') $('cpwd-submit').click(); });
     });
 
     // ── Week navigation ──────────────────────────────────────────────
