@@ -235,11 +235,16 @@
 
     /* ── Name bar ── */
     #name-bar {
+      position: -webkit-sticky;
+      position: sticky;
+      top: 0;
+      z-index: 90;
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 10px 20px;
-      background: rgba(247, 248, 250, .95);
+      gap: 8px;
+      padding: 8px 16px;
+      background: rgba(247, 248, 250, .97);
+      backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
     }
 
@@ -248,11 +253,17 @@
       color: var(--muted);
       white-space: nowrap;
       font-weight: 500;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 420px) {
+      #name-bar label { display: none; }
     }
 
     #my-name {
       flex: 1;
-      max-width: 220px;
+      min-width: 0;
+      max-width: 160px;
       padding: 8px 12px;
       background: var(--surface2);
       border: 1px solid var(--border);
@@ -1358,7 +1369,7 @@
       <img class="logo-img" src="icon-512.png" alt="" />
       <div style="display: flex; flex-direction: column; line-height: 1.1;">
         <span id="app-title">KnowPlan</span>
-        <span style="font-size: 0.55rem; color: var(--muted); font-weight: 500;">V 1.0 (03.06.2026)</span>
+        <span style="font-size: 0.55rem; color: var(--muted); font-weight: 500;">V 1.0 (29.06.2026)</span>
       </div>
     </div>
     <div id="week-nav">
@@ -1381,7 +1392,6 @@
   <div id="name-bar">
     <label for="my-name">You:</label>
     <select id="my-name">
-      <option value="">— Choose your name —</option>
       <option value="Cliff">Cliff</option>
       <option value="Jonas">Jonas</option>
       <option value="Markus">Markus</option>
@@ -1657,7 +1667,7 @@
       const prevPrompt = $('prompt-input').value;
       [$('my-name'), $('prompt-input')].forEach((sel, idx) => {
         const prev = idx === 0 ? prevBar : prevPrompt;
-        sel.innerHTML = `<option value="">— ${idx === 0 ? 'Choose' : 'Select'} your name —</option>`;
+        sel.innerHTML = '';
         // Add Visitor option first
         const visOpt = document.createElement('option');
         visOpt.value = VISITOR_ID;
