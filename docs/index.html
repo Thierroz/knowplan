@@ -1875,7 +1875,22 @@
     $('today-btn').addEventListener('click', () => {
       currentWeekKey = getWeekKey();
       subscribeWeek();
+      // Scroll to today's column after grid renders
+      requestAnimationFrame(() => {
+        setTimeout(scrollToToday, 80);
+      });
     });
+
+    function scrollToToday() {
+      const todayCell = document.querySelector('.today-col');
+      const scroller = document.querySelector('.grid-scroll');
+      if (!todayCell || !scroller) return;
+      const cellRect = todayCell.getBoundingClientRect();
+      const scrollRect = scroller.getBoundingClientRect();
+      // Scroll so today's column is roughly centered (or at least visible)
+      const offset = cellRect.left - scrollRect.left - (scrollRect.width / 2) + (cellRect.width / 2);
+      scroller.scrollBy({ left: offset, behavior: 'smooth' });
+    }
 
     // ── Week-jump popover ─────────────────────────────────────────────
     function closeJumpPop() {
