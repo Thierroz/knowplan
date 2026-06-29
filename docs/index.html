@@ -183,16 +183,6 @@
       pointer-events: none;
     }
 
-    /* Heute button: always clickable even on current week */
-    #today-btn.is-current {
-      opacity: .6;
-      cursor: pointer;
-      pointer-events: auto;
-    }
-
-    #today-btn.is-current:hover {
-      opacity: 1;
-    }
 
     /* Week-jump popover */
     #week-jump-pop {
@@ -1380,7 +1370,7 @@
       <img class="logo-img" src="icon-512.png" alt="" />
       <div style="display: flex; flex-direction: column; line-height: 1.1;">
         <span id="app-title">KnowPlan</span>
-        <span style="font-size: 0.55rem; color: var(--muted); font-weight: 500;">V 1.0 (29.06.2026)</span>
+        <span style="font-size: 0.55rem; color: var(--muted); font-weight: 500;">V 1.1 (29.06.2026)</span>
       </div>
     </div>
     <div id="week-nav">
@@ -2166,8 +2156,7 @@
       $('week-label').childNodes[0].textContent = `${fmtDate(mon)} – ${fmtDate(fri)} ${fri.getUTCFullYear()}`;
       const thisWeek = getWeekKey();
       $('week-tag').textContent = currentWeekKey === thisWeek ? 'Diese Woche' : currentWeekKey;
-      // Dim Today button when already on current week
-      $('today-btn').classList.toggle('is-current', currentWeekKey === thisWeek);
+      // Today button always looks active — no is-current dim
     }
 
     $('prev-week').addEventListener('click', () => {
