@@ -2036,21 +2036,19 @@
       myName = name.trim();
       if (!myName) return;
 
-      // Visitor: no password check
-      if (myName !== VISITOR_ID) {
-        const pwd = password !== undefined ? password : '';
-        const ok = await verifyPassword(myName, pwd);
-        if (!ok) {
-          showToast('Falsches Passwort');
-          // Re-show prompt with error
-          $('prompt-error').classList.add('visible');
-          $('name-prompt').classList.add('visible');
-          $('prompt-input').value = myName;
-          $('prompt-pwd').value = '';
-          $('prompt-pwd').focus();
-          myName = '';
-          return;
-        }
+      // Verify password for everyone (including Visitor)
+      const pwd = password !== undefined ? password : '';
+      const ok = await verifyPassword(myName, pwd);
+      if (!ok) {
+        showToast('Falsches Passwort');
+        // Re-show prompt with error
+        $('prompt-error').classList.add('visible');
+        $('name-prompt').classList.add('visible');
+        $('prompt-input').value = myName;
+        $('prompt-pwd').value = '';
+        $('prompt-pwd').focus();
+        myName = '';
+        return;
       }
 
       localStorage.setItem('knowplan_name', myName);
