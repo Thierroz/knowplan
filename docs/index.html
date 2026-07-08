@@ -40,10 +40,16 @@
 
     html,
     body {
-      min-height: 100dvh;
+      height: 100dvh;
+      overflow: hidden;
       font-family: 'Inter', system-ui, sans-serif;
       background: var(--bg);
       color: var(--text);
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
     }
 
     body::before {
@@ -361,25 +367,31 @@
 
     /* ── Main ── */
     main {
+      flex: 1;
+      min-height: 0;
+      overflow-x: auto;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
       padding: 16px 16px calc(var(--safe-bot) + 24px);
     }
 
     /* ── Grid scroll wrapper ── */
     .grid-scroll {
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
+      /* Horizontal scrolling now handled by main */
       border-radius: var(--radius);
-      padding-bottom: 4px;
     }
 
-    .grid-scroll::-webkit-scrollbar {
+
+    main::-webkit-scrollbar {
       height: 4px;
+      width: 4px;
     }
 
-    .grid-scroll::-webkit-scrollbar-thumb {
+    main::-webkit-scrollbar-thumb {
       background: rgba(0, 0, 0, 0.18);
       border-radius: 4px;
     }
+
 
     /* ── Calendar grid: name column + 5 day columns ── */
     .cal-grid {
